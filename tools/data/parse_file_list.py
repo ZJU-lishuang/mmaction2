@@ -4,6 +4,7 @@ import glob
 import json
 import os
 import os.path as osp
+import mmcv
 
 
 def parse_directory(path,
@@ -416,6 +417,69 @@ def parse_mit_splits():
     splits = ((train_list, val_list, test_list), )
     return splits
 
+
+def parse_jhmdb_split(level):
+    train_file_template = 'data/jhmdb/annotations/trainlist{:02d}.txt'
+    test_file_template = 'data/jhmdb/annotations/testlist{:02d}.txt'
+    class_index_file = 'data/jhmdb/annotations/classInd.txt'
+
+    def generate_class_index_file():
+        """This function will generate a `ClassInd.txt` for HMDB51 in a format
+        like UCF101, where class id starts with 1."""
+        frame_path = 'data/jhmdb/Frames'
+        annotation_dir = 'data/jhmdb/JHMDB-GT.pkl'
+
+        class_list = sorted(os.listdir(frame_path))
+        class_dict = dict()
+        with open(class_index_file, 'w') as f:
+            content = []
+            for class_id, class_name in enumerate(class_list):
+                # like `ClassInd.txt` in UCF-101, the class_id begins with 1
+                class_dict[class_name] = class_id + 1
+                cur_line = ' '.join([str(class_id + 1), class_name])
+                content.append(cur_line)
+            content = '\n'.join(content)
+            f.write(content)
+
+        proposals = mmcv.load(annotation_dir,encoding='iso-8859-1')
+        for i in range(1, 4):
+            train_content=proposals['train_videos'][i-1]
+            test_content=proposals['test_videos'][i-1]
+            train_content = '\n'.join(train_content)
+            test_content = '\n'.join(test_content)
+            with open(train_file_template.format(i), 'w') as fout:
+                fout.write(train_content)
+            with open(test_file_template.format(i), 'w') as fout:
+                fout.write(test_content)
+
+    if not osp.exists(class_index_file):
+        generate_class_index_file()
+
+    with open(class_index_file, 'r') as fin:
+        class_index = [x.strip().split() for x in fin]
+    class_mapping = {x[1]: int(x[0]) - 1 for x in class_index}
+
+    def line_to_map(line):
+        items = line.strip().split()
+        video = osp.splitext(items[0])[0]
+        if level == 1:
+            video = osp.basename(video)
+        elif level == 2:
+            video = osp.join(
+                osp.basename(osp.dirname(video)), osp.basename(video))
+        label = class_mapping[osp.dirname(items[0])]
+        return video, label
+
+    splits = []
+    for i in range(1, 4):
+        with open(train_file_template.format(i), 'r') as fin:
+            train_list = [line_to_map(x) for x in fin]
+
+        with open(test_file_template.format(i), 'r') as fin:
+            test_list = [line_to_map(x) for x in fin]
+        splits.append((train_list, test_list))
+
+    return splits
 
 def parse_hmdb51_split(level):
     train_file_template = 'data/hmdb51/annotations/trainlist{:02d}.txt'

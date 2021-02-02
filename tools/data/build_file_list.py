@@ -6,7 +6,7 @@ import random
 
 from mmcv.runner import set_random_seed
 from tools.data.anno_txt2json import lines2dictlist
-from tools.data.parse_file_list import (parse_directory, parse_hmdb51_split,
+from tools.data.parse_file_list import (parse_directory, parse_hmdb51_split,parse_jhmdb_split,
                                         parse_jester_splits,
                                         parse_kinetics_splits,
                                         parse_mit_splits, parse_mmit_splits,
@@ -21,7 +21,7 @@ def parse_args():
         type=str,
         choices=[
             'ucf101', 'kinetics400', 'kinetics600', 'kinetics700', 'thumos14',
-            'sthv1', 'sthv2', 'mit', 'mmit', 'activitynet', 'hmdb51', 'jester'
+            'sthv1', 'sthv2', 'mit', 'mmit', 'activitynet', 'hmdb51', 'jhmdb','jester'
         ],
         help='dataset to be built file list')
     parser.add_argument(
@@ -203,6 +203,8 @@ def main():
         splits = parse_kinetics_splits(args.level, args.dataset)
     elif args.dataset == 'hmdb51':
         splits = parse_hmdb51_split(args.level)
+    elif args.dataset == 'jhmdb':
+        splits = parse_jhmdb_split(args.level)
     elif args.dataset == 'jester':
         splits = parse_jester_splits(args.level)
     else:
