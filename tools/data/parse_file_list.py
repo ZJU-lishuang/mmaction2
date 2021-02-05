@@ -427,6 +427,7 @@ def parse_jhmdb_split(level):
         """This function will generate a `ClassInd.txt` for HMDB51 in a format
         like UCF101, where class id starts with 1."""
         frame_path = 'data/jhmdb/Frames'
+        # frame_path = 'data/jhmdb/Frames_run'
         annotation_dir = 'data/jhmdb/JHMDB-GT.pkl'
 
         class_list = sorted(os.listdir(frame_path))
@@ -474,9 +475,13 @@ def parse_jhmdb_split(level):
     for i in range(1, 4):
         with open(train_file_template.format(i), 'r') as fin:
             train_list = [line_to_map(x) for x in fin]
+            # train_list = [line_to_map(x) for x in fin if osp.dirname(x.strip().split()[0]) in class_mapping]
+            # train_list = [line_to_map(x) for x in fin if osp.dirname(x.strip().split()[0]) in ['run','walk']]
 
         with open(test_file_template.format(i), 'r') as fin:
             test_list = [line_to_map(x) for x in fin]
+            # test_list = [line_to_map(x) for x in fin if osp.dirname(x.strip().split()[0]) in class_mapping]
+            # test_list = [line_to_map(x) for x in fin if osp.dirname(x.strip().split()[0]) in ['run','walk']]
         splits.append((train_list, test_list))
 
     return splits
