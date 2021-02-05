@@ -1,0 +1,7 @@
+python tools/train.py configs/recognition/tsm/tsm_r50_1x1x8_50e_customdataset_rgb.py \
+    --work-dir work_dirs/tsm_r50_1x1x8_100e_customdataset_rgb \
+    --validate --seed 0 --deterministic
+
+python tools/train.py configs/recognition/tsm/tsm_r50_1x1x8_50e_customdataset_run_rgb.py \
+    --work-dir work_dirs/tsm_r50_1x1x8_100e_customdataset_rgb_run \
+    --validate --seed 0 --deterministic

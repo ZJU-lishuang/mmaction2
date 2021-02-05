@@ -1,0 +1,3 @@
+conda create -n mmaction python=3.8 -y
+conda activate mmaction
+conda install pytorch=1.7.0 torchvision 

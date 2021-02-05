@@ -1,0 +1,4 @@
+python demo/demo.py configs/recognition/tsm/tsm_r50_1x1x8_50e_customdataset_run_rgb.py \
+work_dirs/tsm_r50_1x1x8_100e_customdataset_run_rgb/latest.pth \
+data/jhmdb/Frames/run/American_History_X_run_f_cm_np1_le_med_17/ \
+demo/label_map_jhmdb_run.txt --use-frames
