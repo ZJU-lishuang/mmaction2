@@ -125,6 +125,7 @@ class RawframeDataset(BaseDataset):
                 frame_dir = line_split[idx]
                 if self.data_prefix is not None:
                     frame_dir = osp.join(self.data_prefix, frame_dir)
+                #获得视频帧图片的绝对路径
                 video_info['frame_dir'] = frame_dir
                 idx += 1
                 if self.with_offset:
