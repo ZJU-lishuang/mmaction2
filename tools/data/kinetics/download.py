@@ -124,7 +124,7 @@ def download_clip(video_identifier,
 
     # Check if the video was successfully saved.
     status = os.path.exists(output_filename)
-    os.remove(tmp_filename)
+    # os.remove(tmp_filename)
     return status, 'Downloaded'
 
 
@@ -223,6 +223,6 @@ if __name__ == '__main__':
               'filename of trimmed videos: '
               'videoid_%0xd(start_time)_%0xd(end_time).mp4'))
     p.add_argument('-n', '--num-jobs', type=int, default=24)
-    p.add_argument('-t', '--tmp-dir', type=str, default='/tmp/kinetics')
+    p.add_argument('-t', '--tmp-dir', type=str, default='/home/lishuang/Disk/gitlab/traincode/mmaction2/data/kinetics400/video_ori')
     # help='CSV file of the previous version of Kinetics.')
     main(**vars(p.parse_args()))
