@@ -124,7 +124,7 @@ def download_clip(video_identifier,
 
     # Check if the video was successfully saved.
     status = os.path.exists(output_filename)
-    # os.remove(tmp_filename)
+    os.remove(tmp_filename)
     return status, 'Downloaded'
 
 
