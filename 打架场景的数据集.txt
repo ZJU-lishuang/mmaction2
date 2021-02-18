@@ -1,0 +1,13 @@
+打架的数据集
+NTU CCTV-Fights Dataset
+http://rose1.ntu.edu.sg/Datasets/requesterAdd.asp?DS=6
+已经填写申请表格
+
+真实监控视频数据集 UCF-Crime
+https://www.crcv.ucf.edu/projects/real-world/
+
+fight-detection-surv-dataset
+https://github.com/sayibet/fight-detection-surv-dataset
+
+Violent Flows: Real-Time Detection of Violent Crowd Behavior
+https://www.openu.ac.il/home/hassner/data/violentflows/
