@@ -1,0 +1,4 @@
+#抽取视频帧
+python build_rawframes.py /home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection-surv-dataset-master /home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection-rawframes --task rgb --level 2 --ext mp4 --use-opencv
+#生成文件标签列表
+python vid2img_kinetics.py /home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection-surv-dataset-master/ /home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection
