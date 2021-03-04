@@ -16,7 +16,7 @@ optimizer = dict(
     type='SGD',
     constructor='TSMOptimizerConstructor',
     paramwise_cfg=dict(fc_lr5=True),
-    lr=0.00125,  # this lr is used for 1 gpus
+    lr=0.0025,  # this lr is used for 1 gpus
     momentum=0.9,
     weight_decay=0.0001)
 
@@ -31,7 +31,7 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
 train_pipeline = [
     #clip_len 是单个裁剪片段的长度
-    dict(type='SampleFrames', clip_len=1, frame_interval=1, num_clips=8),
+    dict(type='DenseSampleFrames', clip_len=1, frame_interval=1, num_clips=8),
     dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(
