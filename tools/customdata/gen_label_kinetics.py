@@ -6,13 +6,16 @@
 # Code adapted from https://github.com/metalbubble/TRN-pytorch/blob/master/process_dataset.py
 
 import os
+import random
 
 
-dataset_path = '/home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection/fight-detection-rawframes'
-label_path = '/home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection'
+# dataset_path = '/home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection/fight-detection-rawframes'
+# label_path = '/home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection'
+dataset_path = '/home/lishuang/Disk/gitlab/traincode/mmaction2/data/Real_Life_Violence/Real_Life_Violence_ramframes'
+label_path = '/home/lishuang/Disk/gitlab/traincode/mmaction2/data/Real_Life_Violence'
 
 if __name__ == '__main__':
-    with open(os.path.join(label_path, 'fight_label_map.txt')) as f:
+    with open(os.path.join(label_path, 'violent_label_map.txt')) as f:
         categories = f.readlines()
         categories = [c.strip().replace(' ', '_').replace('"', '').replace('(', '').replace(')', '').replace("'", '') for c in categories]
     assert len(set(categories)) == 2
@@ -23,20 +26,28 @@ if __name__ == '__main__':
     print(dict_categories)
 
     #根据标签得到的文件列表,生成训练列表和验证列表
-    files_input = ['fight.csv', 'noFight.csv']
+    files_input = ['Violence.csv', 'NonViolence.csv']
     file_val_data = "label,filename\n"
     file_train_data = "label,filename\n"
+    file_train_data_tmp=[]
+    file_val_data_tmp=[]
     for filename_input in files_input:
         with open(os.path.join(label_path, filename_input)) as f:
             lines = f.readlines()[1:]
         lines_num=len(lines)
         train_num=int(lines_num*0.9)
-        file_train_data+=''.join(lines[:train_num])
-        file_val_data += ''.join(lines[train_num:])
+        file_train_data_tmp.extend(lines[:train_num])
+        file_val_data_tmp.extend(lines[train_num:])
+        # file_train_data+=''.join(lines[:train_num])
+        # file_val_data += ''.join(lines[train_num:])
     class_name="train"
+    random.shuffle(file_train_data_tmp)
+    file_train_data += ''.join(file_train_data_tmp)
     with open(os.path.join(label_path, '{}.csv'.format(class_name)), 'w') as f:
         f.write(file_train_data)
     class_name = "val"
+    random.shuffle(file_val_data_tmp)
+    file_val_data += ''.join(file_val_data_tmp)
     with open(os.path.join(label_path, '{}.csv'.format(class_name)), 'w') as f:
         f.write(file_val_data)
 

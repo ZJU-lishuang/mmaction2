@@ -59,18 +59,18 @@ def class_process(dir_path, dst_dir_path, class_name):
     file_data = ""
     file_data += "label,filename\n"
     for vid_name in vid_list:
-        file_data += class_name+','+vid_name.replace('.mp4','')+'\n'
+        file_data += class_name+','+os.path.splitext(vid_name)[0]+'\n'
     with open('{}.csv'.format(class_name), 'w') as f:
         f.write(file_data)
 
-    p = Pool(n_thread)
-    from functools import partial
-    worker = partial(vid2jpg, class_path=class_path, dst_class_path=dst_class_path)
-    for _ in tqdm(p.imap_unordered(worker, vid_list), total=len(vid_list)):
-        pass
-    # p.map(worker, vid_list)
-    p.close()
-    p.join()
+    # p = Pool(n_thread)
+    # from functools import partial
+    # worker = partial(vid2jpg, class_path=class_path, dst_class_path=dst_class_path)
+    # for _ in tqdm(p.imap_unordered(worker, vid_list), total=len(vid_list)):
+    #     pass
+    # # p.map(worker, vid_list)
+    # p.close()
+    # p.join()
 
     print('\n')
 
