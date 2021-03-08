@@ -5,3 +5,5 @@ python tools/test.py configs/recognition/tsm/tsm_r50_1x1x8_50e_customdataset_rgb
 python tools/test.py configs/recognition/tsm/tsm_r50_1x1x8_50e_customdataset_run_rgb.py \
     work_dirs/tsm_r50_1x1x8_100e_customdataset_run_rgb/latest.pth --eval top_k_accuracy mean_class_accuracy \
     --out result.json
+
+python tools/test.py configs/detection/AVA/slowonly_kinetics_pretrained_r101_8x8x1_20e_ava_rgb.py weights/slowonly_kinetics_pretrained_r101_8x8x1_20e_ava_rgb_20201217-1c9b4117.pth --eval mAP --out results.csv

@@ -277,16 +277,22 @@ def pack_result(human_detection, result, img_h, img_w):
 def main():
     args = parse_args()
 
-    frame_paths, original_frames = frame_extraction(args.video)
+    # frame_paths, original_frames = frame_extraction(args.video)
+    #folder path
+    video_path = args.video
+    frame_paths = sorted([osp.join(video_path, x) for x in os.listdir(video_path)])
+
     num_frame = len(frame_paths)
-    h, w, _ = original_frames[0].shape
+    # h, w, _ = original_frames[0].shape
+    frame = cv2.imread(frame_paths[0])
+    h, w, _ = frame.shape
 
     # Load label_map
     label_map = load_label_map(args.label_map)
 
     # resize frames to shortside 256
     new_w, new_h = mmcv.rescale_size((w, h), (256, np.Inf))
-    frames = [mmcv.imresize(img, (new_w, new_h)) for img in original_frames]
+    # frames = [mmcv.imresize(img, (new_w, new_h)) for img in original_frames]
     w_ratio, h_ratio = new_w / w, new_h / h
 
     # Get clip_len, frame_interval and calculate center index of each clip
@@ -294,8 +300,8 @@ def main():
     val_pipeline = config['val_pipeline']
     sampler = [x for x in val_pipeline if x['type'] == 'SampleAVAFrames'][0]
     clip_len, frame_interval = sampler['clip_len'], sampler['frame_interval']
-    if num_frame < clip_len * frame_interval:
-        frame_interval = max(int(num_frame / clip_len) - 1, 0)
+    # if num_frame < clip_len * frame_interval:
+    #         frame_interval=max(int(num_frame/clip_len)-1,0)
     window_size = clip_len * frame_interval
     assert clip_len % 2 == 0, 'We would like to have an even clip_len'
     # Note that it's 1 based here
@@ -338,7 +344,8 @@ def main():
         start_frame = timestamp - (clip_len // 2 - 1) * frame_interval
         frame_inds = start_frame + np.arange(0, window_size, frame_interval)
         frame_inds = list(frame_inds - 1)
-        imgs = [frames[ind].astype(np.float32) for ind in frame_inds]
+        imgs = [mmcv.imresize(cv2.imread(frame_paths[ind]), (new_w, new_h)).astype(np.float32) for ind in frame_inds]
+        # imgs = [frames[ind].astype(np.float32) for ind in frame_inds]
         _ = [mmcv.imnormalize_(img, **img_norm_cfg) for img in imgs]
         # THWC -> CTHW -> 1CTHW
         input_array = np.stack(imgs).transpose((3, 0, 1, 2))[np.newaxis]
@@ -393,7 +400,7 @@ def main():
     frame_tmpl = osp.join(target_dir, 'img_%06d.jpg')
     vid.write_images_sequence(frame_tmpl,fps=args.output_fps)
 
-    tmp_frame_dir = osp.dirname(frame_paths[0])
+    # tmp_frame_dir = osp.dirname(frame_paths[0])
     # shutil.rmtree(tmp_frame_dir)
 
 

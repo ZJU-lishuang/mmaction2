@@ -11,6 +11,9 @@ import torch
 from mmcv.runner import load_checkpoint
 from tqdm import tqdm
 
+
+from xml.etree import ElementTree as ET
+
 from mmaction.models import build_detector
 from mmaction.utils import import_module_error_func
 
@@ -38,6 +41,89 @@ FONTCOLOR = (255, 255, 255)  # BGR, white
 MSGCOLOR = (128, 128, 128)  # BGR, gray
 THICKNESS = 1
 LINETYPE = 1
+
+
+#创建一级分支object
+def create_object(root,label,xi,yi,xa,ya):#参数依次，树根，xmin，ymin，xmax，ymax
+    #创建一级分支object
+    _object=ET.SubElement(root,'object')
+    #创建二级分支
+    name=ET.SubElement(_object,'name')
+    # name.text='AreaMissing'
+    name.text = str(label)
+    pose=ET.SubElement(_object,'pose')
+    pose.text='Unspecified'
+    truncated=ET.SubElement(_object,'truncated')
+    truncated.text='0'
+    difficult=ET.SubElement(_object,'difficult')
+    difficult.text='0'
+    #创建bndbox
+    bndbox=ET.SubElement(_object,'bndbox')
+    xmin=ET.SubElement(bndbox,'xmin')
+    xmin.text='%s'%xi
+    ymin = ET.SubElement(bndbox, 'ymin')
+    ymin.text = '%s'%yi
+    xmax = ET.SubElement(bndbox, 'xmax')
+    xmax.text = '%s'%xa
+    ymax = ET.SubElement(bndbox, 'ymax')
+    ymax.text = '%s'%ya
+
+#创建xml文件
+def create_tree(image_name):
+    global annotation
+    # 创建树根annotation
+    annotation = ET.Element('annotation')
+    #创建一级分支folder
+    folder = ET.SubElement(annotation,'folder')
+    #添加folder标签内容
+    folder.text=('ls')
+
+    #创建一级分支filename
+    filename=ET.SubElement(annotation,'filename')
+    filename.text=os.path.basename(image_name).strip('.jpg')
+
+    #创建一级分支path
+    path=ET.SubElement(annotation,'path')
+    path.text=os.getcwd()+'%s'%image_name.lstrip('.')#用于返回当前工作目录
+
+    #创建一级分支source
+    source=ET.SubElement(annotation,'source')
+    #创建source下的二级分支database
+    database=ET.SubElement(source,'database')
+    database.text='Unknown'
+
+    imgtmp = cv2.imread(image_name)
+    imgheight,imgwidth,imgdepth=imgtmp.shape
+    #创建一级分支size
+    size=ET.SubElement(annotation,'size')
+    #创建size下的二级分支图像的宽、高及depth
+    width=ET.SubElement(size,'width')
+    width.text=str(imgwidth)
+    height=ET.SubElement(size,'height')
+    height.text=str(imgheight)
+    depth = ET.SubElement(size,'depth')
+    depth.text = str(imgdepth)
+
+    #创建一级分支segmented
+    segmented = ET.SubElement(annotation,'segmented')
+    segmented.text = '0'
+
+def pretty_xml(element, indent, newline, level=0):  # elemnt为传进来的Elment类，参数indent用于缩进，newline用于换行
+    if element:  # 判断element是否有子元素
+        if (element.text is None) or element.text.isspace():  # 如果element的text没有内容
+            element.text = newline + indent * (level + 1)
+        else:
+            element.text = newline + indent * (level + 1) + element.text.strip() + newline + indent * (level + 1)
+            # else:  # 此处两行如果把注释去掉，Element的text也会另起一行
+            # element.text = newline + indent * (level + 1) + element.text.strip() + newline + indent * level
+    temp = list(element)  # 将element转成list
+    for subelement in temp:
+        if temp.index(subelement) < (len(temp) - 1):  # 如果不是list的最后一个元素，说明下一个行是同级别元素的起始，缩进应一致
+            subelement.tail = newline + indent * (level + 1)
+        else:  # 如果是list的最后一个元素， 说明下一行是母元素的结束，缩进应该少一个
+            subelement.tail = newline + indent * level
+        pretty_xml(subelement, indent, newline, level=level + 1)  # 对子元素进行递归操作
+
 
 
 def hex2color(h):
@@ -85,46 +171,15 @@ def visualize(frames, annotations, plate=plate_blue, max_num=5):
             ind = i * nfpa + j
             frame = frames_[ind]
             for ann in anno:
-                box = ann[0]
-                label = ann[1]
-                if not len(label):
-                    continue
-                score = ann[2]
-                box = (box * scale_ratio).astype(np.int64)
+                box = ann
+                box = (box* scale_ratio).astype(np.int64)
                 st, ed = tuple(box[:2]), tuple(box[2:])
                 cv2.rectangle(frame, st, ed, plate[0], 2)
-                for k, lb in enumerate(label):
-                    if k >= max_num:
-                        break
-                    text = abbrev(lb)
-                    text = ': '.join([text, str(score[k])])
-                    location = (0 + st[0], 18 + k * 18 + st[1])
-                    textsize = cv2.getTextSize(text, FONTFACE, FONTSCALE,
-                                               THICKNESS)[0]
-                    textwidth = textsize[0]
-                    diag0 = (location[0] + textwidth, location[1] - 14)
-                    diag1 = (location[0], location[1] + 2)
-                    cv2.rectangle(frame, diag0, diag1, plate[k + 1], -1)
-                    cv2.putText(frame, text, location, FONTFACE, FONTSCALE,
-                                FONTCOLOR, THICKNESS, LINETYPE)
-
     return frames_
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMAction2 demo')
-    parser.add_argument(
-        '--config',
-        default=('configs/detection/ava/'
-                 'slowonly_omnisource_pretrained_r101_8x8x1_20e_ava_rgb.py'),
-        help='spatio temporal detection config file path')
-    parser.add_argument(
-        '--checkpoint',
-        default=('https://download.openmmlab.com/mmaction/detection/ava/'
-                 'slowonly_omnisource_pretrained_r101_8x8x1_20e_ava_rgb/'
-                 'slowonly_omnisource_pretrained_r101_8x8x1_20e_ava_rgb'
-                 '_20201217-16378594.pth'),
-        help='spatio temporal detection checkpoint file/url')
     parser.add_argument(
         '--det-config',
         default='demo/faster_rcnn_r50_fpn_2x_coco.py',
@@ -141,36 +196,11 @@ def parse_args():
         type=float,
         default=0.9,
         help='the threshold of human detection score')
-    parser.add_argument(
-        '--action-score-thr',
-        type=float,
-        default=0.5,
-        help='the threshold of human action score')
     parser.add_argument('--video', help='video file/url')
     parser.add_argument(
         '--label-map', default='demo/label_map_ava.txt', help='label map file')
     parser.add_argument(
         '--device', type=str, default='cuda:0', help='CPU/CUDA device option')
-    parser.add_argument(
-        '--out-filename',
-        default='demo/stdet_demo.mp4',
-        help='output filename')
-    parser.add_argument(
-        '--predict-stepsize',
-        default=8,
-        type=int,
-        help='give out a prediction per n frames')
-    parser.add_argument(
-        '--output-stepsize',
-        default=4,
-        type=int,
-        help=('show one frame per n frames in the demo, we should have: '
-              'predict_stepsize % output_stepsize == 0'))
-    parser.add_argument(
-        '--output-fps',
-        default=6,
-        type=int,
-        help='the fps of demo video output')
     args = parser.parse_args()
     return args
 
@@ -277,124 +307,78 @@ def pack_result(human_detection, result, img_h, img_w):
 def main():
     args = parse_args()
 
-    frame_paths, original_frames = frame_extraction(args.video)
-    num_frame = len(frame_paths)
-    h, w, _ = original_frames[0].shape
+    # frame_paths, original_frames = frame_extraction(args.video)
+
+    video_path=args.video
+    frame_paths = sorted([osp.join(video_path, x) for x in os.listdir(video_path)])
+    # original_frames = []
+    # for x in os.listdir(video_path):
+    #     frame=cv2.imread(osp.join(video_path, x))
+    #     original_frames.append(frame)
+
+    # num_frame = len(frame_paths)
+    frame = cv2.imread(frame_paths[0])
+    h, w, _ = frame.shape
 
     # Load label_map
-    label_map = load_label_map(args.label_map)
+    # label_map = load_label_map(args.label_map)
 
     # resize frames to shortside 256
-    new_w, new_h = mmcv.rescale_size((w, h), (256, np.Inf))
-    frames = [mmcv.imresize(img, (new_w, new_h)) for img in original_frames]
+    new_w, new_h = mmcv.rescale_size((w, h), (1080, np.Inf))
+    # frames = [mmcv.imresize(img, (new_w, new_h)) for img in original_frames]
     w_ratio, h_ratio = new_w / w, new_h / h
 
-    # Get clip_len, frame_interval and calculate center index of each clip
-    config = mmcv.Config.fromfile(args.config)
-    val_pipeline = config['val_pipeline']
-    sampler = [x for x in val_pipeline if x['type'] == 'SampleAVAFrames'][0]
-    clip_len, frame_interval = sampler['clip_len'], sampler['frame_interval']
-    if num_frame < clip_len * frame_interval:
-        frame_interval = max(int(num_frame / clip_len) - 1, 0)
-    window_size = clip_len * frame_interval
-    assert clip_len % 2 == 0, 'We would like to have an even clip_len'
-    # Note that it's 1 based here
-    timestamps = np.arange(window_size // 2, num_frame + 1 - window_size // 2,
-                           args.predict_stepsize)
-
-    # Get Human detection results
-    center_frames = [frame_paths[ind - 1] for ind in timestamps]
-    human_detections = detection_inference(args, center_frames)
+    human_detections = detection_inference(args, frame_paths)
     for i in range(len(human_detections)):
         det = human_detections[i]
         det[:, 0:4:2] *= w_ratio
         det[:, 1:4:2] *= h_ratio
         human_detections[i] = torch.from_numpy(det[:, :4]).to(args.device)
 
-    # Get img_norm_cfg
-    img_norm_cfg = config['img_norm_cfg']
-    if 'to_rgb' not in img_norm_cfg and 'to_bgr' in img_norm_cfg:
-        to_bgr = img_norm_cfg.pop('to_bgr')
-        img_norm_cfg['to_rgb'] = to_bgr
-    img_norm_cfg['mean'] = np.array(img_norm_cfg['mean'])
-    img_norm_cfg['std'] = np.array(img_norm_cfg['std'])
+    results_total = []
+    for human_detection in human_detections:
+        human_detection[:, 0::2] /= new_w
+        human_detection[:, 1::2] /= new_h
+        results = []
+        for prop in human_detection:
+            results.append((prop.data.cpu().numpy()))
+        results_total.append(results)
 
-    # Build STDET model
-    config.model.backbone.pretrained = None
-    model = build_detector(config.model, test_cfg=config.get('test_cfg'))
 
-    load_checkpoint(model, args.checkpoint, map_location=args.device)
-    model.to(args.device)
-    model.eval()
 
-    predictions = []
-
-    print('Performing SpatioTemporal Action Detection for each clip')
-    for timestamp, proposal in tqdm(zip(timestamps, human_detections)):
-        if proposal.shape[0] == 0:
-            predictions.append(None)
-            continue
-
-        start_frame = timestamp - (clip_len // 2 - 1) * frame_interval
-        frame_inds = start_frame + np.arange(0, window_size, frame_interval)
-        frame_inds = list(frame_inds - 1)
-        imgs = [frames[ind].astype(np.float32) for ind in frame_inds]
-        _ = [mmcv.imnormalize_(img, **img_norm_cfg) for img in imgs]
-        # THWC -> CTHW -> 1CTHW
-        input_array = np.stack(imgs).transpose((3, 0, 1, 2))[np.newaxis]
-        input_tensor = torch.from_numpy(input_array).to(args.device)
-
-        with torch.no_grad():
-            result = model(
-                return_loss=False,
-                img=[input_tensor],
-                img_metas=[[dict(img_shape=(new_h, new_w))]],
-                proposals=[[proposal]])
-            result = result[0]
-            prediction = []
-            # N proposals
-            for i in range(proposal.shape[0]):
-                prediction.append([])
-            # Perform action score thr
-            for i in range(len(result)):
-                if i + 1 not in label_map:
-                    continue
-                for j in range(proposal.shape[0]):
-                    if result[i][j, 4] > args.action_score_thr:
-                        prediction[j].append((label_map[i + 1], result[i][j,
-                                                                          4]))
-            predictions.append(prediction)
-
-    results = []
-    for human_detection, prediction in zip(human_detections, predictions):
-        results.append(pack_result(human_detection, prediction, new_h, new_w))
-
-    def dense_timestamps(timestamps, n):
-        """Make it nx frames."""
-        old_frame_interval = (timestamps[1] - timestamps[0])
-        start = timestamps[0] - old_frame_interval / n * (n - 1) / 2
-        new_frame_inds = np.arange(
-            len(timestamps) * n) * old_frame_interval / n + start
-        return new_frame_inds.astype(np.int)
-
-    dense_n = int(args.predict_stepsize / args.output_stepsize)
-    frames = [
-        cv2.imread(frame_paths[i - 1])
-        for i in dense_timestamps(timestamps, dense_n)
-    ]
-    print('Performing visualization')
-    vis_frames = visualize(frames, results)
-    vid = mpy.ImageSequenceClip([x[:, :, ::-1] for x in vis_frames],
-                                fps=args.output_fps)
-    vid.write_videofile(args.out_filename)
-    #save image
-    target_dir = osp.join('./tmp/test')
+    # xml
+    target_dir = osp.join('./tmp', osp.basename(osp.splitext(video_path)[0]))
     os.makedirs(target_dir, exist_ok=True)
-    frame_tmpl = osp.join(target_dir, 'img_%06d.jpg')
-    vid.write_images_sequence(frame_tmpl,fps=args.output_fps)
+    for frame_path,anno in zip(frame_paths,results_total):
+        output_name = os.path.join(target_dir,os.path.basename(frame_path))
+        create_tree(frame_path)
+        scale_ratio = np.array([w, h, w, h])
+        if anno is None:
+            continue
+        for ann in anno:
+            box = ann
+            box = (box * scale_ratio).astype(np.int64)
+            label="person"
+            left, top, right, bottom = box
+            create_object(annotation, label, left, top, right, bottom)
 
-    tmp_frame_dir = osp.dirname(frame_paths[0])
-    # shutil.rmtree(tmp_frame_dir)
+
+        tree = ET.ElementTree(annotation)
+        root = tree.getroot()  # 得到根元素，Element类
+        pretty_xml(root, '\t', '\n')  # 执行美化方法
+        tree.write('%s.xml' % output_name.rstrip('.jpg'), encoding="utf-8")
+
+    # vis_frames = visualize(frames, results_total)
+    # vid = mpy.ImageSequenceClip([x[:, :, ::-1] for x in vis_frames],
+    #                             fps=6)
+    # target_dir = osp.join('./tmp/test')
+    # os.makedirs(target_dir, exist_ok=True)
+    # frame_tmpl = osp.join(target_dir, 'img_%06d.jpg')
+    # vid.write_images_sequence(frame_tmpl, fps=6)
+
+
+
+
 
 
 if __name__ == '__main__':
