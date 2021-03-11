@@ -1,3 +1,7 @@
+custom_classes = [5,11,12,10,14,64]
+num_classes = len(custom_classes) + 1
+
+
 # model setting
 model = dict(
     type='FastRCNN',
@@ -38,7 +42,7 @@ model = dict(
         bbox_head=dict(
             type='BBoxHeadAVA',
             in_channels=2304,
-            num_classes=81,
+            num_classes=num_classes,
             multilabel=True,
             dropout_ratio=0.5)),
     train_cfg=dict(
@@ -117,7 +121,7 @@ val_pipeline = [
 ]
 
 data = dict(
-    videos_per_gpu=2,
+    videos_per_gpu=1,
     workers_per_gpu=4,
     val_dataloader=dict(videos_per_gpu=1),
     test_dataloader=dict(videos_per_gpu=1),
@@ -129,6 +133,8 @@ data = dict(
         label_file=label_file,
         proposal_file=proposal_file_train,
         person_det_score_thr=0.9,
+        num_classes=num_classes,
+        custom_classes=custom_classes,
         data_prefix=data_root),
     val=dict(
         type=dataset_type,
@@ -138,6 +144,8 @@ data = dict(
         label_file=label_file,
         proposal_file=proposal_file_val,
         person_det_score_thr=0.9,
+        num_classes=num_classes,
+        custom_classes=custom_classes,
         data_prefix=data_root))
 data['test'] = data['val']
 
@@ -165,7 +173,7 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = ('./work_dirs/ava/'
-            'slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb')
+            'slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb_custom')
 load_from = ('./weights/'
              'slowfast_r50_256p_8x8x1_256e_kinetics400_rgb_20200810-863812c2.pth')
 resume_from = None
