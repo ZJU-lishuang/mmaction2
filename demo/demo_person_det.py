@@ -49,64 +49,91 @@ def create_object(root,label,xi,yi,xa,ya):#参数依次，树根，xmin，ymin�
     _object=ET.SubElement(root,'object')
     #创建二级分支
     name=ET.SubElement(_object,'name')
-    # name.text='AreaMissing'
-    name.text = str(label)
-    pose=ET.SubElement(_object,'pose')
-    pose.text='Unspecified'
-    truncated=ET.SubElement(_object,'truncated')
+    name.text='异常行为人'
+    # name.text = str(label)
+    pose=ET.SubElement(_object,'deleted')
+    pose.text='0'
+    truncated=ET.SubElement(_object,'verified')
     truncated.text='0'
-    difficult=ET.SubElement(_object,'difficult')
-    difficult.text='0'
+    difficult=ET.SubElement(_object,'occluded')
+    difficult.text='no'
+    date = ET.SubElement(_object, 'date')
+    date.text = ''
+    id = ET.SubElement(_object, 'id')
+    id.text = '-1'
+    # 创建一级分支parts
+    parts = ET.SubElement(_object, 'parts')
+    # 创建source下的二级分支hasparts
+    hasparts = ET.SubElement(parts, 'hasparts')
+    hasparts.text = ''
+    # 创建source下的二级分支ispartof
+    ispartof = ET.SubElement(parts, 'ispartof')
+    ispartof.text = ''
+    type = ET.SubElement(_object, 'type')
+    type.text = 'bounding_box'
     #创建bndbox
-    bndbox=ET.SubElement(_object,'bndbox')
-    xmin=ET.SubElement(bndbox,'xmin')
-    xmin.text='%s'%xi
-    ymin = ET.SubElement(bndbox, 'ymin')
-    ymin.text = '%s'%yi
-    xmax = ET.SubElement(bndbox, 'xmax')
-    xmax.text = '%s'%xa
-    ymax = ET.SubElement(bndbox, 'ymax')
-    ymax.text = '%s'%ya
+    bndbox=ET.SubElement(_object,'polygon')
+    pt1 = ET.SubElement(bndbox, 'pt')
+    x1 = ET.SubElement(pt1, 'x')
+    x1.text = '%s'%xi
+    y1 = ET.SubElement(pt1, 'y')
+    y1.text = '%s'%yi
+    pt2 = ET.SubElement(bndbox, 'pt')
+    x2 = ET.SubElement(pt2, 'x')
+    x2.text = '%s' % xa
+    y2 = ET.SubElement(pt2, 'y')
+    y2.text = '%s' % yi
+    pt3 = ET.SubElement(bndbox, 'pt')
+    x3 = ET.SubElement(pt3, 'x')
+    x3.text = '%s' % xa
+    y3 = ET.SubElement(pt3, 'y')
+    y3.text = '%s' % ya
+    pt4 = ET.SubElement(bndbox, 'pt')
+    x4 = ET.SubElement(pt4, 'x')
+    x4.text = '%s' % xi
+    y4 = ET.SubElement(pt4, 'y')
+    y4.text = '%s' % ya
+
+    username = ET.SubElement(bndbox, 'username')
+    username.text = ''
+    attributes = ET.SubElement(_object, 'attributes')
+    attributes.text = ''
+    # attributes.clear()
 
 #创建xml文件
 def create_tree(image_name):
     global annotation
     # 创建树根annotation
     annotation = ET.Element('annotation')
-    #创建一级分支folder
-    folder = ET.SubElement(annotation,'folder')
-    #添加folder标签内容
-    folder.text=('ls')
 
     #创建一级分支filename
     filename=ET.SubElement(annotation,'filename')
     filename.text=os.path.basename(image_name).strip('.jpg')
 
-    #创建一级分支path
-    path=ET.SubElement(annotation,'path')
-    path.text=os.getcwd()+'%s'%image_name.lstrip('.')#用于返回当前工作目录
+    #创建一级分支folder
+    folder = ET.SubElement(annotation,'folder')
+    #添加folder标签内容
+    folder.text=('ls')
 
-    #创建一级分支source
-    source=ET.SubElement(annotation,'source')
-    #创建source下的二级分支database
-    database=ET.SubElement(source,'database')
-    database.text='Unknown'
+    # 创建一级分支source
+    source = ET.SubElement(annotation, 'source')
+    # 创建source下的二级分支sourceImage
+    database = ET.SubElement(source, 'sourceImage')
+    database.text = ''
+    # 创建source下的二级分支sourceAnnotation
+    database = ET.SubElement(source, 'sourceAnnotation')
+    database.text = 'Datumaro'
 
     imgtmp = cv2.imread(image_name)
     imgheight,imgwidth,imgdepth=imgtmp.shape
     #创建一级分支size
-    size=ET.SubElement(annotation,'size')
+    size=ET.SubElement(annotation,'imagesize')
     #创建size下的二级分支图像的宽、高及depth
-    width=ET.SubElement(size,'width')
+    height = ET.SubElement(size, 'nrows')
+    height.text = str(imgheight)
+    width=ET.SubElement(size,'ncols')
     width.text=str(imgwidth)
-    height=ET.SubElement(size,'height')
-    height.text=str(imgheight)
-    depth = ET.SubElement(size,'depth')
-    depth.text = str(imgdepth)
 
-    #创建一级分支segmented
-    segmented = ET.SubElement(annotation,'segmented')
-    segmented.text = '0'
 
 def pretty_xml(element, indent, newline, level=0):  # elemnt为传进来的Elment类，参数indent用于缩进，newline用于换行
     if element:  # 判断element是否有子元素
@@ -309,64 +336,75 @@ def main():
 
     # frame_paths, original_frames = frame_extraction(args.video)
 
-    video_path=args.video
-    frame_paths = sorted([osp.join(video_path, x) for x in os.listdir(video_path)])
-    # original_frames = []
-    # for x in os.listdir(video_path):
-    #     frame=cv2.imread(osp.join(video_path, x))
-    #     original_frames.append(frame)
+    
 
-    # num_frame = len(frame_paths)
-    frame = cv2.imread(frame_paths[0])
-    h, w, _ = frame.shape
+    video_pathes = os.listdir(args.video)
+    # frame_paths = sorted([osp.join(osp.join(args.video, video_base_path), x) for video_base_path in video_pathes for x in os.listdir(osp.join(args.video, video_base_path)) ])
 
-    # Load label_map
-    # label_map = load_label_map(args.label_map)
+    # single folder
+    # video_path=args.video
+    # frame_paths = sorted([osp.join(video_path, x) for x in os.listdir(video_path)])
 
-    # resize frames to shortside 256
-    new_w, new_h = mmcv.rescale_size((w, h), (1080, np.Inf))
-    # frames = [mmcv.imresize(img, (new_w, new_h)) for img in original_frames]
-    w_ratio, h_ratio = new_w / w, new_h / h
+    for video_base_path in video_pathes:
+        video_path=osp.join(args.video, video_base_path)
+        frame_paths = sorted([osp.join(video_path, x) for x in os.listdir(video_path)])
+    
+        # original_frames = []
+        # for x in os.listdir(video_path):
+        #     frame=cv2.imread(osp.join(video_path, x))
+        #     original_frames.append(frame)
 
-    human_detections = detection_inference(args, frame_paths)
-    for i in range(len(human_detections)):
-        det = human_detections[i]
-        det[:, 0:4:2] *= w_ratio
-        det[:, 1:4:2] *= h_ratio
-        human_detections[i] = torch.from_numpy(det[:, :4]).to(args.device)
+        # num_frame = len(frame_paths)
+        frame = cv2.imread(frame_paths[0])
+        h, w, _ = frame.shape
 
-    results_total = []
-    for human_detection in human_detections:
-        human_detection[:, 0::2] /= new_w
-        human_detection[:, 1::2] /= new_h
-        results = []
-        for prop in human_detection:
-            results.append((prop.data.cpu().numpy()))
-        results_total.append(results)
+        # Load label_map
+        # label_map = load_label_map(args.label_map)
 
+        # resize frames to shortside 256
+        new_w, new_h = mmcv.rescale_size((w, h), (1800, np.Inf))
+        # frames = [mmcv.imresize(img, (new_w, new_h)) for img in original_frames]
+        w_ratio, h_ratio = new_w / w, new_h / h
 
+        human_detections = detection_inference(args, frame_paths)
+        for i in range(len(human_detections)):
+            det = human_detections[i]
+            det[:, 0:4:2] *= w_ratio
+            det[:, 1:4:2] *= h_ratio
+            human_detections[i] = torch.from_numpy(det[:, :4]).to(args.device)
 
-    # xml
-    target_dir = osp.join('./tmp', osp.basename(osp.splitext(video_path)[0]))
-    os.makedirs(target_dir, exist_ok=True)
-    for frame_path,anno in zip(frame_paths,results_total):
-        output_name = os.path.join(target_dir,os.path.basename(frame_path))
-        create_tree(frame_path)
-        scale_ratio = np.array([w, h, w, h])
-        if anno is None:
-            continue
-        for ann in anno:
-            box = ann
-            box = (box * scale_ratio).astype(np.int64)
-            label="person"
-            left, top, right, bottom = box
-            create_object(annotation, label, left, top, right, bottom)
+        results_total = []
+        for human_detection in human_detections:
+            human_detection[:, 0::2] /= new_w
+            human_detection[:, 1::2] /= new_h
+            results = []
+            for prop in human_detection:
+                results.append((prop.data.cpu().numpy()))
+            results_total.append(results)
 
 
-        tree = ET.ElementTree(annotation)
-        root = tree.getroot()  # 得到根元素，Element类
-        pretty_xml(root, '\t', '\n')  # 执行美化方法
-        tree.write('%s.xml' % output_name.rstrip('.jpg'), encoding="utf-8")
+
+        # xml
+        target_dir = osp.join('./tmp', osp.basename(osp.splitext(video_path)[0]))
+        os.makedirs(target_dir, exist_ok=True)
+        for frame_path,anno in zip(frame_paths,results_total):
+            output_name = os.path.join(target_dir,os.path.basename(frame_path))
+            create_tree(frame_path)
+            scale_ratio = np.array([w, h, w, h])
+            if anno is None:
+                continue
+            for ann in anno:
+                box = ann
+                box = (box * scale_ratio).astype(np.int64)
+                label="person"
+                left, top, right, bottom = box.astype(float)
+                create_object(annotation, label, left, top, right, bottom)
+
+
+            tree = ET.ElementTree(annotation)
+            root = tree.getroot()  # 得到根元素，Element类
+            pretty_xml(root, '\t', '\n')  # 执行美化方法
+            tree.write('%s.xml' % output_name.rstrip('.jpg'), encoding="utf-8")
 
     # vis_frames = visualize(frames, results_total)
     # vid = mpy.ImageSequenceClip([x[:, :, ::-1] for x in vis_frames],
