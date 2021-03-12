@@ -1,5 +1,8 @@
 import os
 import xml.etree.ElementTree as ET
+import numpy as np
+import mmcv
+import shutil
 # import re
 
 def subfiles(path):
@@ -20,6 +23,9 @@ def loadAllTagFile( DirectoryPath, tag ):# download all files' name
 if __name__ == '__main__':
     dataset_folder='/home/lishuang/Disk/dukto/异常行为现场数据/问讯室'
     dataset_xml='/home/lishuang/Disk/dukto/default09'
+    video_save_path='rawframes/'
+    save_image=False
+    _FPS = 25
 
     fig_names = loadAllTagFile(dataset_folder, '.jpg')
     xml_names= loadAllTagFile(dataset_xml, '.xml')
@@ -39,9 +45,19 @@ if __name__ == '__main__':
         size = root.find('imagesize')
         w = int(size.find('ncols').text)
         h = int(size.find('nrows').text)
-        video_id,timestamp=os.path.splitext(img_basename)[0].rsplit('_', 1)
+        video_id,frame_id=os.path.splitext(img_basename)[0].rsplit('_', 1)
         if video_id not in total_ann:
             total_ann[video_id]={}
+            if save_image:
+                new_dir = os.path.join(video_save_path, video_id)
+                if not os.path.isdir(new_dir):
+                    print(f'Creating folder: {new_dir}')
+                    os.makedirs(new_dir)
+        #save image
+        if save_image:
+            save_image_path=os.path.join(video_save_path, video_id,img_basename)
+            shutil.copy(fig_name, save_image_path)
+        timestamp=str(int(frame_id)/_FPS)
         assert timestamp not in total_ann[video_id]
         total_ann[video_id][timestamp]={}
         for obj in root.findall('object'):
@@ -72,6 +88,7 @@ if __name__ == '__main__':
     label_ids = {name: i for i, name in enumerate(total_action_labels)}
     file_data = ""
     print(label_ids)
+    proposals={}
     for video_name,total_frames in total_ann.items():
         for frame,frame_ann in total_frames.items():
             if len(frame_ann) == 0:
@@ -81,6 +98,11 @@ if __name__ == '__main__':
             entity_id=entity_ids[frame_ann['id']]
             file_data+= f"{video_name},{frame},{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]},{label_id},{entity_id}\n"
 
+            img_key = f'{video_name},{frame}'
+            percent=0.9
+            proposals[img_key]=np.array([bbox[0],bbox[1],bbox[2],bbox[3],percent])
+
+    mmcv.dump(proposals,'ava_customdataset_proposals_train.pkl')
 
     with open('ava_train_customdataset.csv', 'w') as f:
         f.write(file_data)
