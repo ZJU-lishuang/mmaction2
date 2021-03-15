@@ -63,14 +63,14 @@ model = dict(
     test_cfg=dict(rcnn=dict(action_thr=0.00)))
 
 dataset_type = 'AVADataset'
-data_root = 'data/ava_customdataset/rawframes'
-anno_root = 'data/ava_customdataset/annotations'
+data_root = 'data/ava_custom/rawframes'
+anno_root = 'data/ava_custom/annotations'
 
 ann_file_train = f'{anno_root}/ava_train_customdataset.csv'
 ann_file_val = f'{anno_root}/ava_train_customdataset.csv'
 
-# exclude_file_train = f'{anno_root}/ava_train_excluded_timestamps_v2.1.csv'
-# exclude_file_val = f'{anno_root}/ava_val_excluded_timestamps_v2.1.csv'
+exclude_file_train = None
+exclude_file_val = None
 
 label_file = f'{anno_root}/ava_customdataset_action_list.pbtxt'
 
@@ -134,7 +134,9 @@ data = dict(
         person_det_score_thr=0.9,
         num_classes=num_classes,
         custom_classes=custom_classes,
-        data_prefix=data_root),
+        data_prefix=data_root,
+        timestamp_start=0,
+        timestamp_end=1800),
     val=dict(
         type=dataset_type,
         ann_file=ann_file_val,
@@ -145,7 +147,9 @@ data = dict(
         person_det_score_thr=0.9,
         num_classes=num_classes,
         custom_classes=custom_classes,
-        data_prefix=data_root))
+        data_prefix=data_root,
+        timestamp_start=0,
+        timestamp_end=1800))
 data['test'] = data['val']
 
 optimizer = dict(type='SGD', lr=0.075, momentum=0.9, weight_decay=0.00001)
