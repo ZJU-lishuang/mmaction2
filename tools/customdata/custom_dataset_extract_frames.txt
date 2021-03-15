@@ -3,6 +3,8 @@ python build_rawframes.py /home/lishuang/Disk/gitlab/traincode/mmaction2/data/fi
 python build_rawframes.py /home/lishuang/Disk/gitlab/traincode/mmaction2/data/violent_detection_video /home/lishuang/Disk/gitlab/traincode/mmaction2/data/violent_detection --task rgb --level 2 --ext avi --use-opencv
 python build_rawframes.py ../../data/ucf_crime_video ../../data/ucf_crime --task rgb --level 2 --ext mp4 --use-opencv
 python build_rawframes.py ../../data/Real_Life_Violence_Dataset ../../data/Real_Life_Violence --task rgb --level 2 --mixed-ext --use-opencv
+
+
 #生成文件标签列表
 python vid2img_kinetics.py /home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection-surv-dataset-master/ /home/lishuang/Disk/gitlab/traincode/mmaction2/data/fight-detection
 python vid2img_kinetics.py ../../data/ucf_crime_video/ ../../data/ucf_crime

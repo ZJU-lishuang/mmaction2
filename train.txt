@@ -10,3 +10,11 @@ python tools/train.py configs/recognition/tsm/tsm_r50_1x1x8_50e_customdataset_ru
 python tools/train.py configs/recognition/i3d/i3d_r50_32x2x1_100e_customdataset_rgb.py \
     --work-dir work_dirs/i3d_r50_32x2x1_100e_customdataset_rgb \
     --validate --seed 0 --deterministic
+
+python tools/train.py \
+configs/detection/ava_customdataset/slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb_custom_classes.py \
+--validate --seed 0 --deterministic
+
+python tools/train.py \
+configs/detection/ava_customdataset/slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb_custom_dataset.py \
+--validate --seed 0 --deterministic
