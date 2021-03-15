@@ -88,7 +88,7 @@ class AVADataset(BaseDataset):
             default value is referred from the official website. Default: 1798.
     """
 
-    _FPS = 30
+    _FPS = 25  #custom dataset fps is 25,ava is 30
 
     def __init__(self,
                  ann_file,
