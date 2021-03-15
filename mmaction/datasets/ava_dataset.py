@@ -219,7 +219,7 @@ class AVADataset(BaseDataset):
 
                 entity_box = np.array(list(map(float, line_split[2:6])))
                 entity_id = int(line_split[7])
-                shot_info = (0, (self.timestamp_end - self.timestamp_start) *
+                shot_info = (1, (self.timestamp_end - self.timestamp_start) *
                              self._FPS)
 
                 video_info = dict(
