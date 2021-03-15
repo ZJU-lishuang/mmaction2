@@ -136,7 +136,7 @@ data = dict(
         custom_classes=custom_classes,
         data_prefix=data_root,
         timestamp_start=0,
-        timestamp_end=1800),
+        timestamp_end=3600),
     val=dict(
         type=dataset_type,
         ann_file=ann_file_val,
@@ -149,7 +149,7 @@ data = dict(
         custom_classes=custom_classes,
         data_prefix=data_root,
         timestamp_start=0,
-        timestamp_end=1800))
+        timestamp_end=3600))
 data['test'] = data['val']
 
 optimizer = dict(type='SGD', lr=0.075, momentum=0.9, weight_decay=0.00001)
