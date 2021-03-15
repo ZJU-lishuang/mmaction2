@@ -1,4 +1,4 @@
-custom_classes = [1,2,3,4,5,6,7,8,9,10]
+custom_classes = [1,2,3,4,5,6,7,8,9,10,11,12]
 num_classes = len(custom_classes) + 1
 
 
@@ -67,7 +67,7 @@ data_root = 'data/ava_custom/rawframes'
 anno_root = 'data/ava_custom/annotations'
 
 ann_file_train = f'{anno_root}/ava_train_customdataset.csv'
-ann_file_val = f'{anno_root}/ava_train_customdataset.csv'
+ann_file_val = f'{anno_root}/ava_val_customdataset.csv'
 
 exclude_file_train = None
 exclude_file_val = None
@@ -75,7 +75,7 @@ exclude_file_val = None
 label_file = f'{anno_root}/ava_customdataset_action_list.pbtxt'
 
 proposal_file_train = (f'{anno_root}/ava_customdataset_proposals_train.pkl')
-proposal_file_val = f'{anno_root}/ava_customdataset_proposals_train.pkl'
+proposal_file_val = f'{anno_root}/ava_customdataset_proposals_val.pkl'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
@@ -120,7 +120,7 @@ val_pipeline = [
 ]
 
 data = dict(
-    videos_per_gpu=1,
+    videos_per_gpu=5,
     workers_per_gpu=4,
     val_dataloader=dict(videos_per_gpu=1),
     test_dataloader=dict(videos_per_gpu=1),
@@ -172,6 +172,7 @@ evaluation = dict(interval=1, save_best='mAP@0.5IOU')
 log_config = dict(
     interval=20, hooks=[
         dict(type='TextLoggerHook'),
+        dict(type='TensorboardLoggerHook'),
     ])
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
