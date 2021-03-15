@@ -21,16 +21,18 @@ def loadAllTagFile( DirectoryPath, tag ):# download all files' name
     return result
 
 if __name__ == '__main__':
-    dataset_folder='/home/lishuang/Disk/dukto/异常行为现场数据/问讯室'
+    # dataset_folder='/home/lishuang/Disk/dukto/异常行为现场数据/问讯室'
     dataset_xml='/home/lishuang/Disk/dukto/default09'
     video_save_path='rawframes/'
     save_image=False
     _FPS = 25
 
-    fig_names = loadAllTagFile(dataset_folder, '.jpg')
+    # fig_names = loadAllTagFile(dataset_folder, '.jpg')
     xml_names= loadAllTagFile(dataset_xml, '.xml')
     xml_names.sort()
-    fig_names.sort()
+    if exsit
+    # fig_names.sort()
+    fig_names=xml_names
 
     total_ann={}
     total_entity_id=[]
@@ -102,7 +104,7 @@ if __name__ == '__main__':
             for person_id,person_ann in frame_ann.items():
 
                 bbox=person_ann['bbox']
-                label_id = label_ids[person_ann['label']]
+                label_id = label_ids[person_ann['label']]+1
                 entity_id=entity_ids[person_ann['id']]
                 file_data+= f"{video_name},{frame},{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]},{label_id},{entity_id}\n"
 
