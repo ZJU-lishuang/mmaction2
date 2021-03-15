@@ -57,13 +57,16 @@ if __name__ == '__main__':
         if save_image:
             save_image_path=os.path.join(video_save_path, video_id,img_basename)
             shutil.copy(fig_name, save_image_path)
-        timestamp=str(int(frame_id)/_FPS)
+        timestamp=int(int(frame_id)/_FPS)
         assert timestamp not in total_ann[video_id]
         total_ann[video_id][timestamp]={}
+        person_id=0
         for obj in root.findall('object'):
             name = obj.find('name').text
             if name != '异常行为人':
                 continue
+            person_id+=1
+            total_ann[video_id][timestamp][person_id] = {}
             labels = obj.find('attributes').text
             # pattern = r"异常行为="
             # m = re.search(pattern, labels)
@@ -76,9 +79,9 @@ if __name__ == '__main__':
                 float(pts[2].find('x').text)/w,
                 float(pts[2].find('y').text)/h
             ]
-            total_ann[video_id][timestamp]['bbox']=bbox
-            total_ann[video_id][timestamp]['label']=action_label
-            total_ann[video_id][timestamp]['id']=entity_id
+            total_ann[video_id][timestamp][person_id]['bbox']=bbox
+            total_ann[video_id][timestamp][person_id]['label']=action_label
+            total_ann[video_id][timestamp][person_id]['id']=entity_id
             if action_label not in total_action_labels:
                 total_action_labels.append(action_label)
             if entity_id not in total_entity_id:
@@ -93,14 +96,19 @@ if __name__ == '__main__':
         for frame,frame_ann in total_frames.items():
             if len(frame_ann) == 0:
                 continue
-            bbox=frame_ann['bbox']
-            label_id = label_ids[frame_ann['label']]
-            entity_id=entity_ids[frame_ann['id']]
-            file_data+= f"{video_name},{frame},{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]},{label_id},{entity_id}\n"
+            img_key = f'{video_name},{frame:04d}'
+            percent = 0.95
+            tmp_proposals=[]
+            for person_id,person_ann in frame_ann.items():
 
-            img_key = f'{video_name},{frame}'
-            percent=0.9
-            proposals[img_key]=np.array([bbox[0],bbox[1],bbox[2],bbox[3],percent])
+                bbox=person_ann['bbox']
+                label_id = label_ids[person_ann['label']]
+                entity_id=entity_ids[person_ann['id']]
+                file_data+= f"{video_name},{frame},{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]},{label_id},{entity_id}\n"
+
+                # proposals[img_key].append(np.array([bbox[0],bbox[1],bbox[2],bbox[3],percent]))
+                tmp_proposals.append([bbox[0], bbox[1], bbox[2], bbox[3], percent])
+            proposals[img_key] = np.array(tmp_proposals)
 
     mmcv.dump(proposals,'ava_customdataset_proposals_train.pkl')
 
