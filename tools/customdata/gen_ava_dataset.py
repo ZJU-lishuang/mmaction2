@@ -22,8 +22,9 @@ def loadAllTagFile( DirectoryPath, tag ):# download all files' name
 
 if __name__ == '__main__':
     dataset_xml='/home/lishuang/Disk/dukto/default09'
-    video_save_path='rawframes/'
     save_image=False
+    if save_image:
+        video_save_path = 'rawframes/'
     _FPS = 25
 
     xml_names= loadAllTagFile(dataset_xml, '.xml')
@@ -75,7 +76,13 @@ if __name__ == '__main__':
             labels = obj.find('attributes').text
             # pattern = r"异常行为="
             # m = re.search(pattern, labels)
-            action_label,entity_id=labels.split(',')
+
+            # action_label,entity_id=labels.split(',')
+            entity_id, action_label = labels.split(',')
+            if '异常行为' not in action_label:
+                action_label, entity_id = labels.split(',')
+            assert '异常行为' in action_label
+
             polygon = obj.find('polygon')
             pts = polygon.findall('pt')
             bbox = [
@@ -84,6 +91,8 @@ if __name__ == '__main__':
                 float(pts[2].find('x').text)/w,
                 float(pts[2].find('y').text)/h
             ]
+            action_label=action_label.strip()
+            entity_id=entity_id.strip()
             total_ann[video_id][timestamp][person_id]['bbox']=bbox
             total_ann[video_id][timestamp][person_id]['label']=action_label
             total_ann[video_id][timestamp][person_id]['id']=entity_id
@@ -92,9 +101,17 @@ if __name__ == '__main__':
             if entity_id not in total_entity_id:
                 total_entity_id.append(entity_id)
 
+
+    def custom_action_labels():
+        return [
+            '异常行为=头撞墙', '异常行为=砸门', '异常行为=正常', '异常行为=扇巴掌', '异常行为=掐脖子', '异常行为=举高', '异常行为=撞桌', '异常行为=打斗',
+            '异常行为=打滚', '异常行为=快速移动', '异常行为=举标语', '异常行为=发传单'
+        ]
+
     entity_ids = {name: i for i, name in enumerate(total_entity_id)}
-    label_ids = {name: i for i, name in enumerate(total_action_labels)}
+    label_ids = {name: i for i, name in enumerate(custom_action_labels())}
     file_data = ""
+    print(total_action_labels)
     print(label_ids)
     proposals={}
     for video_name,total_frames in total_ann.items():
