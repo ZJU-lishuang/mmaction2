@@ -21,18 +21,21 @@ def loadAllTagFile( DirectoryPath, tag ):# download all files' name
     return result
 
 if __name__ == '__main__':
-    # dataset_folder='/home/lishuang/Disk/dukto/异常行为现场数据/问讯室'
     dataset_xml='/home/lishuang/Disk/dukto/default09'
     video_save_path='rawframes/'
     save_image=False
     _FPS = 25
 
-    # fig_names = loadAllTagFile(dataset_folder, '.jpg')
     xml_names= loadAllTagFile(dataset_xml, '.xml')
     xml_names.sort()
-    if exsit
-    # fig_names.sort()
-    fig_names=xml_names
+    exist_image=False
+    #标注的关键帧图片是否存在，用于检查是否有漏标，不是必须的
+    if exist_image:
+        dataset_folder = '/home/lishuang/Disk/dukto/异常行为现场数据/问讯室'
+        fig_names = loadAllTagFile(dataset_folder, '.jpg')
+        fig_names.sort()
+    else:
+        fig_names=xml_names
 
     total_ann={}
     total_entity_id=[]
