@@ -15,3 +15,5 @@ ps:需要手动修改里面的路径，extract_rgb_frames_opencv脚本碰到视�
 #根据已有标注生成类似ava格式的标注
 python gen_ava_dataset.py
 ps:需要手动修改里面的路径
+
+avadataset里面fps的数值要根据实际的值修改

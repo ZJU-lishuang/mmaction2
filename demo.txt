@@ -16,14 +16,6 @@ python demo/demo_spatiotemporal_det.py --video demo/demo.mp4 \
 --output-stepsize 4 \
 --output-fps 6
 
-
- 
-#自动标注人体框
-python demo/demo_person_det.py --video /home/lishuang/Disk/dukto/异常行为现场数据/武汉海关天河机场海关入境到达24_1614576099_A9CADD23/武汉海关天河机场海关入境到达24_1DCC0218_1614576099_1/异常行为 \
---det-config demo/faster_rcnn_r50_fpn_2x_coco.py \
---det-checkpoint weights/faster_rcnn_r50_fpn_2x_coco_bbox_mAP-0.384_20200504_210434-a5d8aa15.pth \
---det-score-thr 0.5
-
 #使用图片
 python demo_spatiotemporal_det_image.py \
 --video ./tmp \

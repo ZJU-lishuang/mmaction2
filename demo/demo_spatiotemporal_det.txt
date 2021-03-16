@@ -1,0 +1,11 @@
+python demo/demo_spatiotemporal_det.py --video demo/demo.mp4 \
+--config configs/detection/ava_customdataset/slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb_custom_dataset.py \
+--checkpoint weights/slowfast_customdataset_epoch_17.pth \
+--det-config demo/faster_rcnn_r50_fpn_2x_coco.py
+--det-checkpoint weights/faster_rcnn_r50_fpn_2x_coco_bbox_mAP-0.384_20200504_210434-a5d8aa15.pth \
+--det-score-thr 0.9 \
+--action-score-thr 0.5 \
+--label-map demo/label_map_ava_custom.txt \
+--predict-stepsize 8 \
+--output-stepsize 4 \
+--output-fps 6
