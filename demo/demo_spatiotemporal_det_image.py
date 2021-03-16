@@ -87,12 +87,12 @@ def visualize(frames, annotations, plate=plate_blue, max_num=5):
             for ann in anno:
                 box = ann[0]
                 label = ann[1]
-                if not len(label):
-                    continue
-                score = ann[2]
                 box = (box * scale_ratio).astype(np.int64)
                 st, ed = tuple(box[:2]), tuple(box[2:])
                 cv2.rectangle(frame, st, ed, plate[0], 2)
+                if not len(label):
+                    continue
+                score = ann[2]
                 for k, lb in enumerate(label):
                     if k >= max_num:
                         break
