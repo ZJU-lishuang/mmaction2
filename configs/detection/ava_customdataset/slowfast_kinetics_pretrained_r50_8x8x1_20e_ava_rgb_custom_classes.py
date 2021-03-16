@@ -1,4 +1,4 @@
-custom_classes = [5,11,12,10,14,64]
+custom_classes = [3,10]
 num_classes = len(custom_classes) + 1
 
 
@@ -43,6 +43,7 @@ model = dict(
             type='BBoxHeadAVA',
             in_channels=2304,
             num_classes=num_classes,
+            topk=1,
             multilabel=True,
             dropout_ratio=0.5)),
     train_cfg=dict(
