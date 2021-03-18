@@ -20,14 +20,28 @@ def loadAllTagFile( DirectoryPath, tag ):# download all files' name
             result.append(file_path)
     return result
 
+def GetFileFromThisRootDir(dir,ext = None):
+  allfiles = []
+  needExtFilter = (ext != None)
+  for root,dirs,files in os.walk(dir):
+    for filespath in files:
+      filepath = os.path.join(root, filespath)
+      extension = os.path.splitext(filepath)[1]
+      if needExtFilter and extension in ext:
+        allfiles.append(filepath)
+      elif not needExtFilter:
+        allfiles.append(filepath)
+  return allfiles
+
 if __name__ == '__main__':
-    dataset_xml='/home/lishuang/Disk/dukto/default09'
+    dataset_xml='/home/lishuang/Disk/dukto/labelme'
     save_image=False
     if save_image:
         video_save_path = 'rawframes/'
-    _FPS = 25
+    # _FPS = 25
+    _FPS = 10
 
-    xml_names= loadAllTagFile(dataset_xml, '.xml')
+    xml_names= GetFileFromThisRootDir(dataset_xml, '.xml')
     xml_names.sort()
     exist_image=False
     #标注的关键帧图片是否存在，用于检查是否有漏标，不是必须的
@@ -44,7 +58,7 @@ if __name__ == '__main__':
     for fig_name in fig_names:
         img_basename=os.path.basename(fig_name)
         xml_basename=os.path.splitext(img_basename)[0]+".xml"
-        xml_path=os.path.join(dataset_xml,xml_basename)
+        xml_path=os.path.join(os.path.dirname(fig_name),xml_basename)
         assert xml_path in xml_names
         tree = ET.parse(xml_path)
         root = tree.getroot()
@@ -132,7 +146,7 @@ if __name__ == '__main__':
                 tmp_proposals.append([bbox[0], bbox[1], bbox[2], bbox[3], percent])
             proposals[img_key] = np.array(tmp_proposals)
 
-    mmcv.dump(proposals,'ava_customdataset_proposals_train.pkl')
+    mmcv.dump(proposals,'ava_customdataset_proposals_test.pkl')
 
-    with open('ava_train_customdataset.csv', 'w') as f:
+    with open('ava_test_customdataset.csv', 'w') as f:
         f.write(file_data)
