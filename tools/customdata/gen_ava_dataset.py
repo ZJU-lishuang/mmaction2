@@ -34,23 +34,31 @@ def GetFileFromThisRootDir(dir,ext = None):
   return allfiles
 
 if __name__ == '__main__':
-    dataset_xml='/home/lishuang/Disk/dukto/labelme'
-    save_image=False
-    if save_image:
-        video_save_path = 'rawframes/'
-    # _FPS = 25
-    _FPS = 10
-
+    #标注文件夹
+    dataset_xml='/home/lishuang/Disk/dukto/action_train'
+    proposals_pkl='ava_customdataset_proposals_train.pkl'
+    csv_file='ava_train_customdataset.csv'
+    
+    #训练集10帧抽取，验证集25帧抽取，取公约数5
+    _FPS = 5
+    #获取文件夹下对应后缀的文件，包括子文件夹
     xml_names= GetFileFromThisRootDir(dataset_xml, '.xml')
     xml_names.sort()
+
     exist_image=False
+    save_image=False
     #标注的关键帧图片是否存在，用于检查是否有漏标，不是必须的
     if exist_image:
-        dataset_folder = '/home/lishuang/Disk/dukto/异常行为现场数据/问讯室'
+        #图片路径
+        dataset_folder = ''
         fig_names = loadAllTagFile(dataset_folder, '.jpg')
         fig_names.sort()
+        #是否将标注图片按视频分开保存
+        if save_image:
+            video_save_path = 'rawframes/'
     else:
         fig_names=xml_names
+        save_image=False
 
     total_ann={}
     total_entity_id=[]
@@ -66,6 +74,9 @@ if __name__ == '__main__':
         w = int(size.find('ncols').text)
         h = int(size.find('nrows').text)
         video_id,frame_id=os.path.splitext(img_basename)[0].rsplit('_', 1)
+        #异常处理，有的是 frame_图片帧.xml，有的是 视频名称_图片帧.xml :(
+        if video_id == 'frame':
+            video_id=os.path.basename(os.path.dirname(xml_path))
         if video_id not in total_ann:
             total_ann[video_id]={}
             if save_image:
@@ -78,7 +89,7 @@ if __name__ == '__main__':
             save_image_path=os.path.join(video_save_path, video_id,img_basename)
             shutil.copy(fig_name, save_image_path)
         timestamp=int(int(frame_id)/_FPS)
-        assert timestamp not in total_ann[video_id]
+        assert timestamp not in total_ann[video_id],f'video_id={video_id},timestamp={timestamp},frame_id={frame_id},fps={_FPS}'
         total_ann[video_id][timestamp]={}
         person_id=0
         for obj in root.findall('object'):
@@ -91,11 +102,25 @@ if __name__ == '__main__':
             # pattern = r"异常行为="
             # m = re.search(pattern, labels)
 
-            # action_label,entity_id=labels.split(',')
-            entity_id, action_label = labels.split(',')
-            if '异常行为' not in action_label:
-                action_label, entity_id = labels.split(',')
-            assert '异常行为' in action_label
+            #异常处理：用视频标注的内容，里面属性不一致
+            if len(labels.split(',')) ==4:
+                _,action_label,_, entity_id = labels.split(',')
+                if '人物ID' not in entity_id:
+                    entity_id,action_label,_, _ = labels.split(',')
+            else:
+                assert len(labels.split(',')) ==2
+                entity_id, action_label = labels.split(',')
+                if '异常行为' not in action_label:
+                    action_label, entity_id = labels.split(',')
+
+            #验证集，历史遗留，先采样间隔25帧，后改为间隔10帧，历史遗留问题，先用图片标注，后用视频标注导致不同
+            # 异常处理：标注文件问题，标注信息可能会左右对调
+            # entity_id, action_label = labels.split(',')
+            # if '异常行为' not in action_label:
+            #     action_label, entity_id = labels.split(',')
+
+            assert '异常行为' in action_label,f'xml_path={xml_path}'
+            assert '人物ID' in entity_id,f'xml_path={xml_path}'
 
             polygon = obj.find('polygon')
             pts = polygon.findall('pt')
@@ -142,11 +167,10 @@ if __name__ == '__main__':
                 entity_id=entity_ids[person_ann['id']]
                 file_data+= f"{video_name},{frame},{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]},{label_id},{entity_id}\n"
 
-                # proposals[img_key].append(np.array([bbox[0],bbox[1],bbox[2],bbox[3],percent]))
                 tmp_proposals.append([bbox[0], bbox[1], bbox[2], bbox[3], percent])
             proposals[img_key] = np.array(tmp_proposals)
 
-    mmcv.dump(proposals,'ava_customdataset_proposals_test.pkl')
+    mmcv.dump(proposals,proposals_pkl)
 
-    with open('ava_test_customdataset.csv', 'w') as f:
+    with open(csv_file, 'w') as f:
         f.write(file_data)
