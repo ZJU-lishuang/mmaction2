@@ -11,6 +11,8 @@ ps:参数写在里面，需要手动修改路径
 #抽取视频帧
 bash extract_rgb_frames_ffmpeg.sh
 ps:需要手动修改里面的路径，extract_rgb_frames_opencv脚本碰到视频帧错误会停止继续抽取图片帧操作。
+#使用opencv,跳过错误帧
+python catVideoToImage.py
 
 #根据已有标注生成类似ava格式的标注
 python gen_ava_dataset.py
