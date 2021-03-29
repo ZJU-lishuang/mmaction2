@@ -88,7 +88,7 @@ class AVADataset(BaseDataset):
             default value is referred from the official website. Default: 1798.
     """
 
-    _FPS = 25  #custom dataset fps is 25,ava is 30
+    _FPS = 5  #custom dataset fps is 25,ava is 30
 
     def __init__(self,
                  ann_file,
@@ -203,6 +203,11 @@ class AVADataset(BaseDataset):
     def load_annotations(self):
         video_infos = []
         records_dict_by_img = defaultdict(list)
+        # video_files=os.path.dirname(self.ann_file).replace('annotations','rawframes')
+        # video_timestamp_end={}
+        # for video_name in os.listdir(video_files):
+        #     video_path=os.path.join(video_files,video_name)
+        #     video_timestamp_end[video_name]=len(os.listdir(video_path))
         with open(self.ann_file, 'r') as fin:
             for line in fin:
                 line_split = line.strip().split(',')
@@ -221,6 +226,7 @@ class AVADataset(BaseDataset):
                 entity_id = int(line_split[7])
                 shot_info = (1, (self.timestamp_end - self.timestamp_start) *
                              self._FPS)
+                # shot_info = (1, video_timestamp_end[video_id])
 
                 video_info = dict(
                     video_id=video_id,
@@ -240,6 +246,7 @@ class AVADataset(BaseDataset):
             frame_dir = video_id
             if self.data_prefix is not None:
                 frame_dir = osp.join(self.data_prefix, frame_dir)
+            # shot_info = (1, video_timestamp_end[video_id])
             video_info = dict(
                 frame_dir=frame_dir,
                 video_id=video_id,
