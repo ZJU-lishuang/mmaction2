@@ -1,0 +1,9 @@
+python tools/train.py \
+./configs/detection/ava_customdataset/slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb_custom_classes.py \
+--validate --seed 0 --deterministic
+
+python tools/train.py \
+./configs/detection/ava_customdataset/slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb_custom_dataset.py \
+--validate --seed 0 --deterministic
+
+

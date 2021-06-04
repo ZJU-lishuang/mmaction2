@@ -1,0 +1,3 @@
+mmaction/datasets/avadataset.py
+需要设置_FPS参数，表示标注帧的采样间隔，ava是30
+shot_info参数从0改到1

@@ -64,8 +64,8 @@ model = dict(
     test_cfg=dict(rcnn=dict(action_thr=0.00)))
 
 dataset_type = 'AVADataset'
-data_root = 'data/ava_mini/rawframes'
-anno_root = 'data/ava_mini/annotations'
+data_root = '../data/ava_mini/rawframes'
+anno_root = '../data/ava_mini/annotations'
 
 ann_file_train = f'{anno_root}/ava_train_v2.1.csv'
 ann_file_val = f'{anno_root}/ava_val_v2.1.csv'
@@ -174,8 +174,8 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = ('./work_dirs/ava/'
-            'slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb_custom')
-load_from = ('./weights/'
+            'slowfast_kinetics_pretrained_r50_8x8x1_20e_ava_rgb_customclass')
+load_from = ('../pretrain/'
              'slowfast_r50_256p_8x8x1_256e_kinetics400_rgb_20200810-863812c2.pth')
 resume_from = None
 find_unused_parameters = False

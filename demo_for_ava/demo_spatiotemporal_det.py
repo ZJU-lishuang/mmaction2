@@ -291,8 +291,9 @@ def main():
     val_pipeline = config['val_pipeline']
     sampler = [x for x in val_pipeline if x['type'] == 'SampleAVAFrames'][0]
     clip_len, frame_interval = sampler['clip_len'], sampler['frame_interval']
-    if num_frame < clip_len * frame_interval:
-        frame_interval = max(int(num_frame / clip_len) - 1, 0)
+    #deal with the problem of the too few frames
+    # if num_frame < clip_len * frame_interval:
+    #     frame_interval = max(int(num_frame / clip_len) - 1, 0)
     window_size = clip_len * frame_interval
     assert clip_len % 2 == 0, 'We would like to have an even clip_len'
     # Note that it's 1 based here
@@ -409,7 +410,8 @@ def main():
     frame_tmpl = osp.join(target_dir, 'img_%06d.jpg')
     vid.write_images_sequence(frame_tmpl,fps=args.output_fps)
 
-    tmp_frame_dir = osp.dirname(frame_paths[0])
+    #删除生成的临时文件夹
+    # tmp_frame_dir = osp.dirname(frame_paths[0])
     # shutil.rmtree(tmp_frame_dir)
 
 

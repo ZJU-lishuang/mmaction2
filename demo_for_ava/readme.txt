@@ -1,0 +1,8 @@
+demo_spatiotemporal_det_image.py
+输入为图片
+
+demo_spatiotemporal_det.py
+输入为视频
+
+demo_person_det.py
+输入图片所在文件夹，自动标注行人矩形框
