@@ -23,7 +23,7 @@ Assume you want to add an optimizer named as `MyOptimizer`, which has arguments 
 You need to first implement the new optimizer in a file, e.g., in `mmaction/core/optimizer/my_optimizer.py`:
 
 ```python
-from .registry import OPTIMIZERS
+from mmcv.runner import OPTIMIZERS
 from torch.optim import Optimizer
 
 @OPTIMIZERS.register_module()
@@ -107,7 +107,7 @@ We basically categorize model components into 4 types.
 - recognizer: the whole recognizer model pipeline, usually contains a backbone and cls_head.
 - backbone: usually an FCN network to extract feature maps, e.g., ResNet, BNInception.
 - cls_head: the component for classification task, usually contains an FC layer with some pooling layers.
-- localizer: the model for temporal localization task, currently available: BSN, BMN.
+- localizer: the model for temporal localization task, currently available: BSN, BMN, SSN.
 
 ### Add new backbones
 
@@ -118,7 +118,7 @@ Here we show how to develop new components with an example of TSN.
     ```python
     import torch.nn as nn
 
-    from ..registry import BACKBONES
+    from ..builder import BACKBONES
 
     @BACKBONES.register_module()
     class ResNet(nn.Module):
@@ -161,7 +161,7 @@ Here we show how to develop a new head with the example of TSNHead as the follow
     and overwrite `init_weights(self)` and `forward(self, x)` method.
 
     ```python
-    from ..registry import HEADS
+    from ..builder import HEADS
     from .base import BaseHead
 
 
@@ -258,7 +258,7 @@ In the api for [`train.py`](/mmaction/apis/train.py), it will register the learn
 
 So far, the supported updaters can be find in [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/lr_updater.py), but if you want to customize a new learning rate updater, you may follow the steps below:
 
-1. First, write your own LrUpdaterHook in `$MMAction2/mmaction/core/lr`. The snippet followed is an example of cumtomized lr updater that uses learning rate based on a specific learning rate ratio: `lrs`, by which the learning rate decreases at each `steps`:
+1. First, write your own LrUpdaterHook in `$MMAction2/mmaction/core/lr`. The snippet followed is an example of customized lr updater that uses learning rate based on a specific learning rate ratio: `lrs`, by which the learning rate decreases at each `steps`:
 
 ```python
 @HOOKS.register_module()

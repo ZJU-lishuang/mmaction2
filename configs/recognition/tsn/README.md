@@ -2,7 +2,7 @@
 
 ## Introduction
 
-[ALGORITHM]
+<!-- [ALGORITHM] -->
 
 ```BibTeX
 @inproceedings{wang2016temporal,
@@ -24,6 +24,13 @@
 |[tsn_r50_1x1x3_75e_ucf101_rgb](/configs/recognition/tsn/tsn_r50_1x1x3_75e_ucf101_rgb.py) [1] |8| ResNet50 | ImageNet |83.03|96.78|8332| [ckpt](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_1x1x3_75e_ucf101_rgb/tsn_r50_1x1x3_75e_ucf101_rgb_20201023-d85ab600.pth) | [log](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_1x1x3_75e_ucf101_rgb/tsn_r50_1x1x3_75e_ucf101_rgb_20201023.log) | [json](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_1x1x3_75e_ucf101_rgb/tsn_r50_1x1x3_75e_ucf101_rgb_20201023.json) |
 
 [1] We report the performance on UCF-101 split1.
+
+### Diving48
+
+|config | gpus | backbone | pretrain | top1 acc| top5 acc | gpu_mem(M) | ckpt | log| json|
+|:--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+|[tsn_r50_video_1x1x8_100e_diving48_rgb](/configs/recognition/tsn/tsn_r50_video_1x1x8_100e_diving48_rgb.py)|8| ResNet50 | ImageNet | 71.27 | 95.74 | 5699 | [ckpt](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_1x1x8_100e_diving48_rgb/tsn_r50_video_1x1x8_100e_diving48_rgb_20210426-6dde0185.pth) | [log](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_1x1x8_100e_diving48_rgb/20210426_014138.log) | [json](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_1x1x8_100e_diving48_rgb/20210426_014138.log.json)|
+|[tsn_r50_video_1x1x16_100e_diving48_rgb](/configs/recognition/tsn/tsn_r50_video_1x1x16_100e_diving48_rgb.py)|8| ResNet50 | ImageNet | 76.75 | 96.95 | 5705 | [ckpt](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_1x1x16_100e_diving48_rgb/tsn_r50_video_1x1x16_100e_diving48_rgb_20210426-63c5f2f7.pth) | [log](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_1x1x16_100e_diving48_rgb/20210426_014103.log) | [json](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_1x1x16_100e_diving48_rgb/20210426_014103.log.json)|
 
 ### HMDB51
 
@@ -53,6 +60,18 @@
 |[tsn_r50_video_dense_1x1x8_100e_kinetics400_rgb](/configs/recognition/tsn/tsn_r50_video_dense_1x1x8_100e_kinetics400_rgb.py) |short-side 256|8| ResNet50| ImageNet | 70.40 | 89.12 |x|x|x|21553| [ckpt](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_dense_1x1x8_100e_kinetics400_rgb/tsn_r50_video_dense_1x1x8_100e_kinetics400_rgb_20200703-0f19175f.pth) | [log](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_dense_1x1x8_100e_kinetics400_rgb/tsn_r50_video_2d_1x1x8_dense_100e_kinetics400_rgb.log)| [json](https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_video_dense_1x1x8_100e_kinetics400_rgb/tsn_r50_video_2d_1x1x8_dense_100e_kinetics400_rgb.log.json)|
 
 Here, We use [1: 1] to indicate that we combine rgb and flow score with coefficients 1: 1 to get the two-stream prediction (without applying softmax).
+
+### Using backbones from 3rd-party in TSN
+
+It's possible and convenient to use a 3rd-party backbone for TSN under the framework of MMAction2, here we provide some examples for:
+
+- [x] Backbones from [MMClassification](https://github.com/open-mmlab/mmclassification/)
+- [x] Backbones from [TorchVision](https://github.com/pytorch/vision/)
+
+| config                                                       |   resolution   | gpus |                           backbone                           | pretrain | top1 acc | top5 acc |                             ckpt                             |                             log                              |                             json                             |
+| :----------------------------------------------------------- | :------------: | :--: | :----------------------------------------------------------: | :------: | :------: | :------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+| [tsn_rn101_32x4d_320p_1x1x3_100e_kinetics400_rgb](/configs/recognition/tsn/custom_backbones/tsn_rn101_32x4d_320p_1x1x3_100e_kinetics400_rgb.py) | short-side 320 | 8x2  | ResNeXt101-32x4d [[MMCls](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)] | ImageNet |  73.43   |  91.01   | [ckpt](https://download.openmmlab.com/mmaction/recognition/tsn/custom_backbones/tsn_rn101_32x4d_320p_1x1x3_100e_kinetics400_rgb-16a8b561.pth) | [log](https://download.openmmlab.com/mmaction/recognition/tsn/custom_backbones/tsn_rn101_32x4d_320p_1x1x3_100e_kinetics400_rgb.log) | [json](https://download.openmmlab.com/mmaction/recognition/tsn/custom_backbones/tsn_rn101_32x4d_320p_1x1x3_100e_kinetics400_rgb.json) |
+| [tsn_dense161_320p_1x1x3_100e_kinetics400_rgb](/configs/recognition/tsn/custom_backbones/tsn_dense161_320p_1x1x3_100e_kinetics400_rgb.py) | short-side 320 | 8x2  | ResNeXt101-32x4d [[TorchVision](https://github.com/pytorch/vision/)] | ImageNet |  72.78   |  90.75   | [ckpt](https://download.openmmlab.com/mmaction/recognition/tsn/custom_backbones/tsn_dense161_320p_1x1x3_100e_kinetics400_rgb/tsn_dense161_320p_1x1x3_100e_kinetics400_rgb-cbe85332.pth) | [log](https://download.openmmlab.com/mmaction/recognition/tsn/custom_backbones/tsn_dense161_320p_1x1x3_100e_kinetics400_rgb/tsn_dense161_320p_1x1x3_100e_kinetics400_rgb.log) | [json](https://download.openmmlab.com/mmaction/recognition/tsn/custom_backbones/tsn_dense161_320p_1x1x3_100e_kinetics400_rgb/tsn_dense161_320p_1x1x3_100e_kinetics400_rgb.json) |
 
 ### Kinetics-400 Data Benchmark (8-gpus, ResNet50, ImageNet pretrain; 3 segments)
 
@@ -162,14 +181,14 @@ Notes:
 
 For more details on data preparation, you can refer to
 
-* [preparing_ucf101](/tools/data/ucf101/README.md)
-* [preparing_kinetics](/tools/data/kinetics/README.md)
-* [preparing_sthv1](/tools/data/sthv1/README.md)
-* [preparing_sthv2](/tools/data/sthv2/README.md)
-* [preparing_mit](/tools/data/mit/README.md)
-* [preparing_mmit](/tools/data/mmit/README.md)
-* [preparing_hvu](/tools/data/hvu/README.md)
-* [preparing_hmdb51](/tools/data/hmdb51/README.md)
+- [preparing_ucf101](/tools/data/ucf101/README.md)
+- [preparing_kinetics](/tools/data/kinetics/README.md)
+- [preparing_sthv1](/tools/data/sthv1/README.md)
+- [preparing_sthv2](/tools/data/sthv2/README.md)
+- [preparing_mit](/tools/data/mit/README.md)
+- [preparing_mmit](/tools/data/mmit/README.md)
+- [preparing_hvu](/tools/data/hvu/README.md)
+- [preparing_hmdb51](/tools/data/hmdb51/README.md)
 
 ## Train
 

@@ -1,3 +1,4 @@
+import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
@@ -21,22 +22,51 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
 
     Args:
         backbone (dict): Backbone modules to extract feature.
-        cls_head (dict): Classification head to process feature.
+        cls_head (dict | None): Classification head to process feature.
+            Default: None.
+        neck (dict | None): Neck for feature fusion. Default: None.
         train_cfg (dict | None): Config for training. Default: None.
         test_cfg (dict | None): Config for testing. Default: None.
     """
 
     def __init__(self,
                  backbone,
-                 cls_head,
+                 cls_head=None,
                  neck=None,
                  train_cfg=None,
                  test_cfg=None):
         super().__init__()
-        self.backbone = builder.build_backbone(backbone)
+        # record the source of the backbone
+        self.backbone_from = 'mmaction2'
+
+        if backbone['type'].startswith('mmcls.'):
+            try:
+                import mmcls.models.builder as mmcls_builder
+            except (ImportError, ModuleNotFoundError):
+                raise ImportError('Please install mmcls to use this backbone.')
+            backbone['type'] = backbone['type'][6:]
+            self.backbone = mmcls_builder.build_backbone(backbone)
+            self.backbone_from = 'mmcls'
+        elif backbone['type'].startswith('torchvision.'):
+            try:
+                import torchvision.models
+            except (ImportError, ModuleNotFoundError):
+                raise ImportError('Please install torchvision to use this '
+                                  'backbone.')
+            backbone_type = backbone.pop('type')[12:]
+            self.backbone = torchvision.models.__dict__[backbone_type](
+                **backbone)
+            # disable the classifier
+            self.backbone.classifier = nn.Identity()
+            self.backbone.fc = nn.Identity()
+            self.backbone_from = 'torchvision'
+        else:
+            self.backbone = builder.build_backbone(backbone)
+
         if neck is not None:
             self.neck = builder.build_neck(neck)
-        self.cls_head = builder.build_head(cls_head)
+
+        self.cls_head = builder.build_head(cls_head) if cls_head else None
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -53,15 +83,48 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
             self.max_testing_views = test_cfg['max_testing_views']
             assert isinstance(self.max_testing_views, int)
 
+        if test_cfg is not None and 'feature_extraction' in test_cfg:
+            self.feature_extraction = test_cfg['feature_extraction']
+        else:
+            self.feature_extraction = False
+
+        # mini-batch blending, e.g. mixup, cutmix, etc.
+        self.blending = None
+        if train_cfg is not None and 'blending' in train_cfg:
+            from mmcv.utils import build_from_cfg
+            from mmaction.datasets.builder import BLENDINGS
+            self.blending = build_from_cfg(train_cfg['blending'], BLENDINGS)
+
         self.init_weights()
 
         self.fp16_enabled = False
 
+    @property
+    def with_neck(self):
+        """bool: whether the recognizer has a neck"""
+        return hasattr(self, 'neck') and self.neck is not None
+
+    @property
+    def with_cls_head(self):
+        """bool: whether the recognizer has a cls_head"""
+        return hasattr(self, 'cls_head') and self.cls_head is not None
+
     def init_weights(self):
         """Initialize the model network weights."""
-        self.backbone.init_weights()
-        self.cls_head.init_weights()
-        if hasattr(self, 'neck'):
+        if self.backbone_from in ['mmcls', 'mmaction2']:
+            self.backbone.init_weights()
+        elif self.backbone_from == 'torchvision':
+            warnings.warn('We do not initialize weights for backbones in '
+                          'torchvision, since the weights for backbones in '
+                          'torchvision are initialized in their __init__ '
+                          'functions. ')
+        else:
+            raise NotImplementedError('Unsupported backbone source '
+                                      f'{self.backbone_from}!')
+
+        if self.with_cls_head:
+            self.cls_head.init_weights()
+        if self.with_neck:
             self.neck.init_weights()
 
     @auto_fp16()
@@ -74,7 +137,11 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
         Returns:
             torch.tensor: The extracted features.
         """
-        x = self.backbone(imgs)
+        if (hasattr(self.backbone, 'features')
+                and self.backbone_from == 'torchvision'):
+            x = self.backbone.features(imgs)
+        else:
+            x = self.backbone(imgs)
         return x
 
     def average_clip(self, cls_score, num_segs=1):
@@ -171,6 +238,8 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
         if return_loss:
             if label is None:
                 raise ValueError('Label should not be None.')
+            if self.blending is not None:
+                imgs, label = self.blending(imgs, label)
             return self.forward_train(imgs, label, **kwargs)
 
         return self.forward_test(imgs, **kwargs)

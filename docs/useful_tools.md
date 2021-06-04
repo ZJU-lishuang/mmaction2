@@ -51,7 +51,7 @@ Examples:
     python tools/analysis/analyze_logs.py cal_train_time ${JSON_LOGS} [--include-outliers]
     ```
 
-- Compute the average training speed for a config file
+- Compute the average training speed for a config file.
 
     ```shell
     python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
@@ -98,6 +98,7 @@ You may use the result for simple comparisons, but double check it before you ad
 `/tools/pytorch2onnx.py` is a script to convert model to [ONNX](https://github.com/onnx/onnx) format.
 It also supports comparing the output results between Pytorch and ONNX model for verification.
 Run `pip install onnx onnxruntime` first to install the dependency.
+Please note that a softmax layer could be added for recognizers by `--softmax` option, in order to get predictions in range `[0, 1]`.
 
 - For recognizers, please run:
 
@@ -137,7 +138,7 @@ The final output filename will be `tsn_r50_1x1x3_100e_kinetics400_rgb-{hash id}.
 
 ### Evaluating a metric
 
-tools/analysis/eval_metric.py evaluates certain metrics of the results saved in a file according to a config file.
+`tools/analysis/eval_metric.py` evaluates certain metrics of the results saved in a file according to a config file.
 
 The saved result file is created on `tools/test.py` by setting the arguments `--out ${RESULT_FILE}` to indicate the result file,
 which stores the final output of the whole model.

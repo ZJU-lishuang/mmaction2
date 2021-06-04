@@ -281,9 +281,6 @@ def main():
     num_frame = len(frame_paths)
     h, w, _ = original_frames[0].shape
 
-    # Load label_map
-    label_map = load_label_map(args.label_map)
-
     # resize frames to shortside 256
     new_w, new_h = mmcv.rescale_size((w, h), (256, np.Inf))
     frames = [mmcv.imresize(img, (new_w, new_h)) for img in original_frames]
@@ -301,6 +298,18 @@ def main():
     # Note that it's 1 based here
     timestamps = np.arange(window_size // 2, num_frame + 1 - window_size // 2,
                            args.predict_stepsize)
+
+    # Load label_map
+    label_map = load_label_map(args.label_map)
+    try:
+        if config['data']['train']['custom_classes'] is not None:
+            label_map = {
+                id + 1: label_map[cls]
+                for id, cls in enumerate(config['data']['train']
+                                         ['custom_classes'])
+            }
+    except KeyError:
+        pass
 
     # Get Human detection results
     center_frames = [frame_paths[ind - 1] for ind in timestamps]
@@ -320,6 +329,13 @@ def main():
     img_norm_cfg['std'] = np.array(img_norm_cfg['std'])
 
     # Build STDET model
+    try:
+        # In our spatiotemporal detection demo, different actions should have
+        # the same number of bboxes.
+        config['model']['test_cfg']['rcnn']['action_thr'] = .0
+    except KeyError:
+        pass
+
     config.model.backbone.pretrained = None
     model = build_detector(config.model, test_cfg=config.get('test_cfg'))
 

@@ -1,22 +1,119 @@
 ## Changelog
 
+### 0.15.0 (31/05/2021)
+
 **Highlights**
 
-- Support LFB
+- Support PoseC3D
+- Support ACRN
+- Support MIM
 
 **New Features**
 
-- Support LFB [#553](https://github.com/open-mmlab/mmaction2/pull/553)
+- Support PoseC3D ([#786](https://github.com/open-mmlab/mmaction2/pull/786), [#890](https://github.com/open-mmlab/mmaction2/pull/890))
+- Support MIM ([#870](https://github.com/open-mmlab/mmaction2/pull/870))
+- Support ACRN and Focal Loss ([#891](https://github.com/open-mmlab/mmaction2/pull/891))
+- Support Jester dataset ([#864](https://github.com/open-mmlab/mmaction2/pull/864))
 
 **Improvements**
 
-- Add slowfast config/json/log/ckpt for training custom classes of AVA [#678](https://github.com/open-mmlab/mmaction2/pull/678)
+- Add `metric_options` for evaluation to docs ([#873](https://github.com/open-mmlab/mmaction2/pull/873))
+- Support creating a new label map based on custom classes for demos about spatio temporal demo ([#879](https://github.com/open-mmlab/mmaction2/pull/879))
+- Improve document about AVA dataset preparation ([#878](https://github.com/open-mmlab/mmaction2/pull/878))
+- Provide a script to extract clip-level feature ([#856](https://github.com/open-mmlab/mmaction2/pull/856))
 
 **Bug and Typo Fixes**
 
+- Fix issues about resume ([#877](https://github.com/open-mmlab/mmaction2/pull/877), [#878](https://github.com/open-mmlab/mmaction2/pull/878))
+- Correct the key name of `eval_results` dictionary for metric 'mmit_mean_average_precision' ([#885](https://github.com/open-mmlab/mmaction2/pull/885))
+
 **ModelZoo**
 
-- Add LFB for AVA2.1 [#553](https://github.com/open-mmlab/mmaction2/pull/553)
+- Support Jester dataset ([#864](https://github.com/open-mmlab/mmaction2/pull/864))
+- Support ACRN and Focal Loss ([#891](https://github.com/open-mmlab/mmaction2/pull/891))
+
+### 0.14.0 (30/04/2021)
+
+**Highlights**
+
+- Support TRN
+- Support Diving48
+
+**New Features**
+
+- Support TRN ([#755](https://github.com/open-mmlab/mmaction2/pull/755))
+- Support Diving48 ([#835](https://github.com/open-mmlab/mmaction2/pull/835))
+- Support Webcam Demo for Spatio-temporal Action Detection Models ([#795](https://github.com/open-mmlab/mmaction2/pull/795))
+
+**Improvements**
+
+- Add softmax option for pytorch2onnx tool ([#781](https://github.com/open-mmlab/mmaction2/pull/781))
+- Support TRN ([#755](https://github.com/open-mmlab/mmaction2/pull/755))
+- Test with onnx models and TensorRT engines ([#758](https://github.com/open-mmlab/mmaction2/pull/758))
+- Speed up AVA Testing ([#784](https://github.com/open-mmlab/mmaction2/pull/784))
+- Add `self.with_neck` attribute ([#796](https://github.com/open-mmlab/mmaction2/pull/796))
+- Update installation document ([#798](https://github.com/open-mmlab/mmaction2/pull/798))
+- Use a random master port ([#809](https://github.com/open-mmlab/mmaction2/pull/8098))
+- Update AVA processing data document ([#801](https://github.com/open-mmlab/mmaction2/pull/801))
+- Refactor spatio-temporal augmentation ([#782](https://github.com/open-mmlab/mmaction2/pull/782))
+- Add QR code in CN README ([#812](https://github.com/open-mmlab/mmaction2/pull/812))
+- Add Alternative way to download Kinetics ([#817](https://github.com/open-mmlab/mmaction2/pull/817), [#822](https://github.com/open-mmlab/mmaction2/pull/822))
+- Refactor Sampler ([#790](https://github.com/open-mmlab/mmaction2/pull/790))
+- Use EvalHook in MMCV with backward compatibility ([#793](https://github.com/open-mmlab/mmaction2/pull/793))
+- Use MMCV Model Registry ([#843](https://github.com/open-mmlab/mmaction2/pull/843))
+
+**Bug and Typo Fixes**
+
+- Fix a bug in pytorch2onnx.py when `num_classes <= 4` ([#800](https://github.com/open-mmlab/mmaction2/pull/800), [#824](https://github.com/open-mmlab/mmaction2/pull/824))
+- Fix `demo_spatiotemporal_det.py` error ([#803](https://github.com/open-mmlab/mmaction2/pull/803), [#805](https://github.com/open-mmlab/mmaction2/pull/805))
+- Fix loading config bugs when resume ([#820](https://github.com/open-mmlab/mmaction2/pull/820))
+- Make HMDB51 annotation generation more robust ([#811](https://github.com/open-mmlab/mmaction2/pull/811))
+
+**ModelZoo**
+
+- Update checkpoint for 256 height in something-V2 ([#789](https://github.com/open-mmlab/mmaction2/pull/789))
+- Support Diving48 ([#835](https://github.com/open-mmlab/mmaction2/pull/835))
+
+### 0.13.0 (31/03/2021)
+
+**Highlights**
+
+- Support LFB
+- Support using backbone from MMCls/TorchVision
+- Add Chinese documentation
+
+**New Features**
+
+- Support LFB ([#553](https://github.com/open-mmlab/mmaction2/pull/553))
+- Support using backbones from MMCls for TSN ([#679](https://github.com/open-mmlab/mmaction2/pull/679))
+- Support using backbones from TorchVision for TSN ([#720](https://github.com/open-mmlab/mmaction2/pull/720))
+- Support Mixup and Cutmix for recognizers ([#681](https://github.com/open-mmlab/mmaction2/pull/681))
+- Support Chinese documentation ([#665](https://github.com/open-mmlab/mmaction2/pull/665), [#680](https://github.com/open-mmlab/mmaction2/pull/680), [#689](https://github.com/open-mmlab/mmaction2/pull/689), [#701](https://github.com/open-mmlab/mmaction2/pull/701), [#702](https://github.com/open-mmlab/mmaction2/pull/702), [#703](https://github.com/open-mmlab/mmaction2/pull/703), [#706](https://github.com/open-mmlab/mmaction2/pull/706), [#716](https://github.com/open-mmlab/mmaction2/pull/716), [#717](https://github.com/open-mmlab/mmaction2/pull/717), [#731](https://github.com/open-mmlab/mmaction2/pull/731), [#733](https://github.com/open-mmlab/mmaction2/pull/733), [#735](https://github.com/open-mmlab/mmaction2/pull/735), [#736](https://github.com/open-mmlab/mmaction2/pull/736), [#737](https://github.com/open-mmlab/mmaction2/pull/737), [#738](https://github.com/open-mmlab/mmaction2/pull/738), [#739](https://github.com/open-mmlab/mmaction2/pull/739), [#740](https://github.com/open-mmlab/mmaction2/pull/740), [#742](https://github.com/open-mmlab/mmaction2/pull/742), [#752](https://github.com/open-mmlab/mmaction2/pull/752), [#759](https://github.com/open-mmlab/mmaction2/pull/759), [#761](https://github.com/open-mmlab/mmaction2/pull/761), [#772](https://github.com/open-mmlab/mmaction2/pull/772), [#775](https://github.com/open-mmlab/mmaction2/pull/775))
+
+**Improvements**
+
+- Add slowfast config/json/log/ckpt for training custom classes of AVA ([#678](https://github.com/open-mmlab/mmaction2/pull/678))
+- Set RandAugment as Imgaug default transforms ([#585](https://github.com/open-mmlab/mmaction2/pull/585))
+- Add `--test-last` & `--test-best` for `tools/train.py` to test checkpoints after training ([#608](https://github.com/open-mmlab/mmaction2/pull/608))
+- Add fcn_testing in TPN ([#684](https://github.com/open-mmlab/mmaction2/pull/684))
+- Remove redundant recall functions ([#741](https://github.com/open-mmlab/mmaction2/pull/741))
+- Recursively remove pretrained step for testing ([#695](https://github.com/open-mmlab/mmaction2/pull/695))
+- Improve demo by limiting inference fps ([#668](https://github.com/open-mmlab/mmaction2/pull/668))
+
+**Bug and Typo Fixes**
+
+- Fix a bug about multi-class in VideoDataset ([#723](https://github.com/open-mmlab/mmaction2/pull/678))
+- Reverse key-value in anet filelist generation ([#686](https://github.com/open-mmlab/mmaction2/pull/686))
+- Fix flow norm cfg typo ([#693](https://github.com/open-mmlab/mmaction2/pull/693))
+
+**ModelZoo**
+
+- Add LFB for AVA2.1 ([#553](https://github.com/open-mmlab/mmaction2/pull/553))
+- Add TSN with ResNeXt-101-32x4d backbone as an example for using MMCls backbones ([#679](https://github.com/open-mmlab/mmaction2/pull/679))
+- Add TSN with Densenet161 backbone as an example for using TorchVision backbones ([#720](https://github.com/open-mmlab/mmaction2/pull/720))
+- Add slowonly_nl_embedded_gaussian_r50_4x16x1_150e_kinetics400_rgb ([#690](https://github.com/open-mmlab/mmaction2/pull/690))
+- Add slowonly_nl_embedded_gaussian_r50_8x8x1_150e_kinetics400_rgb ([#704](https://github.com/open-mmlab/mmaction2/pull/704))
+- Add slowonly_nl_kinetics_pretrained_r50_4x16x1(8x8x1)_20e_ava_rgb ([#730](https://github.com/open-mmlab/mmaction2/pull/730))
 
 ### 0.12.0 (28/02/2021)
 

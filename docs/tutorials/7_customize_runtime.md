@@ -59,7 +59,7 @@ You need to create a new directory named `mmaction/core/optimizer`.
 And then implement the new optimizer in a file, e.g., in `mmaction/core/optimizer/my_optimizer.py`:
 
 ```python
-from .registry import OPTIMIZERS
+from mmcv.runner import OPTIMIZERS
 from torch.optim import Optimizer
 
 
@@ -113,11 +113,7 @@ Some models may have some parameter-specific settings for optimization, e.g. wei
 The users can do those fine-grained parameter tuning through customizing optimizer constructor.
 
 ```python
-from mmcv.utils import build_from_cfg
-
-from mmcv.runner.optimizer import OPTIMIZER_BUILDERS, OPTIMIZERS
-from mmaction.utils import get_root_logger
-from .my_optimizer import MyOptimizer
+from mmcv.runner.optimizer import OPTIMIZER_BUILDERS
 
 
 @OPTIMIZER_BUILDERS.register_module()
@@ -304,7 +300,7 @@ mmcv_hooks = [
 
 ### Modify default runtime hooks
 
-There are some common hooks that are not registered through `custom_hooks` but has been registered by default when importing MMCV,  they are
+There are some common hooks that are not registered through `custom_hooks` but has been registered by default when importing MMCV, they are
 
 - log_config
 - checkpoint_config
