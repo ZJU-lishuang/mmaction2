@@ -200,6 +200,84 @@ def frame_extraction(video_path):
         flag, frame = vid.read()
     return frame_paths, frames
 
+from utils.torch_utils import select_device,time_synchronized
+from utils.general import check_img_size,non_max_suppression,scale_coords,save_one_box
+from utils.datasets import LoadImages,letterbox
+from models.experimental import attempt_load
+import time
+from pathlib import Path
+def yolov5_inference(args,frame_paths):
+    opt_device=''
+    opt_half=False
+    imgsz=640
+    opt_augment=False
+    opt_conf_thres=0.25
+    opt_iou_thres=0.45
+    opt_classes=None
+    opt_agnostic_nms=False
+    opt_max_det=1000
+    weights="../../pretrain/yolov5s.pt"
+    source="../../data/run_test"
+    device = select_device(opt_device)
+    half = opt_half and device.type != 'cpu'  # half precision only supported on CUDA
+
+    # Load model
+    model = attempt_load(weights, map_location=device)  # load FP32 model
+    stride = int(model.stride.max())  # model stride
+    imgsz = check_img_size(imgsz, s=stride)  # check img_size
+    names = model.module.names if hasattr(model, 'module') else model.names  # get class names
+    if half:
+        model.half()  # to FP16
+    
+    # Run inference
+    if device.type != 'cpu':
+        model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
+    
+    results = []
+    print('Performing Human Detection for each frame')
+    for frame_path in tqdm(frame_paths):
+        im0s = cv2.imread(frame_path)  # BGR
+    
+        # Padded resize
+        img = letterbox(im0s, imgsz, stride=stride)[0]
+    
+        # Convert
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        img = np.ascontiguousarray(img)
+        img = torch.from_numpy(img).to(device)
+        img = img.half() if half else img.float()  # uint8 to fp16/32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        if img.ndimension() == 3:
+            img = img.unsqueeze(0)
+    
+        # Inference
+        t1 = time_synchronized()
+        pred = model(img, augment=opt_augment)[0]
+    
+        # Apply NMS
+        pred = non_max_suppression(pred, opt_conf_thres, opt_iou_thres, opt_classes, opt_agnostic_nms,
+                                   max_det=opt_max_det)
+        t2 = time_synchronized()
+        result=[]
+        # Process detections
+        for i, det in enumerate(pred):  # detections per image
+            im0 = im0s.copy()
+    
+            if len(det):
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+    
+                for *xyxy, conf, cls in reversed(det):
+                    if cls ==0 and conf >= args.det_score_thr:
+                        tmp=np.append(torch.tensor(xyxy).numpy(),conf.cpu().numpy())
+                        result.append(tmp)
+                        # p = Path(frame_path)  # to Path
+                        # c = int(cls)  # integer class
+                        # save_one_box(xyxy, im0, file=f"runs/crops/{names[c]}/{p.stem}.jpg", BGR=True)
+        result=np.array(result)
+        results.append(result)
+    
+    return results
 
 def detection_inference(args, frame_paths):
     """Detect human boxes given frame paths.
@@ -310,10 +388,14 @@ def main():
 
     # Get Human detection results
     center_frames = [frame_paths[ind - 1] for ind in timestamps]
-    human_detections = detection_inference(args, center_frames)
+
+    human_detections = yolov5_inference(args, center_frames)
+    # human_detections = detection_inference(args, center_frames)
     #xyxy
     for i in range(len(human_detections)):
         det = human_detections[i]
+        if det.shape[0] == 0:
+            det=det.reshape(0,4)
         det[:, 0:4:2] *= w_ratio
         det[:, 1:4:2] *= h_ratio
         human_detections[i] = torch.from_numpy(det[:, :4]).to(args.device)

@@ -9,6 +9,8 @@ __pycache__/
 
 tools/customdata/rawframes
 
+models/
+utils/
 
 # Distribution / packaging
 .Python

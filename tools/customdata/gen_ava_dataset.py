@@ -35,15 +35,25 @@ def GetFileFromThisRootDir(dir,ext = None):
 
 if __name__ == '__main__':
     #标注文件夹
-    dataset_xml='/home/lishuang/Disk/dukto/action_train'
-    proposals_pkl='ava_customdataset_proposals_train.pkl'
-    csv_file='ava_train_customdataset.csv'
+    # dataset_xml='/home/lishuang/Disk/dukto/action_train'
+    # proposals_pkl='ava_customdataset_proposals_train.pkl'
+    # csv_file='ava_train_customdataset.csv'
+    dataset_xml = '/home/lishuang/Disk/gitlab/traincode/video_action_det/data/ava_xianchang/'
+    proposals_pkl = 'ava_customdataset_proposals_train.pkl'
+    csv_file = 'ava_train_customdataset.csv'
+
+    dataset_xml1 = '/home/lishuang/Disk/dukto/异常行为标注/action_train'
     
     #训练集10帧抽取，验证集25帧抽取，取公约数5
     _FPS = 5
     #获取文件夹下对应后缀的文件，包括子文件夹
     xml_names= GetFileFromThisRootDir(dataset_xml, '.xml')
     xml_names.sort()
+
+    xml_names1 = GetFileFromThisRootDir(dataset_xml1, '.xml')
+    xml_names1.sort()
+
+    xml_names=xml_names+xml_names1
 
     exist_image=False
     save_image=False
@@ -63,6 +73,7 @@ if __name__ == '__main__':
     total_ann={}
     total_entity_id=[]
     total_action_labels=[]
+    total_action_labels_num = {}
     for fig_name in fig_names:
         img_basename=os.path.basename(fig_name)
         xml_basename=os.path.splitext(img_basename)[0]+".xml"
@@ -77,6 +88,8 @@ if __name__ == '__main__':
         #异常处理，有的是 frame_图片帧.xml，有的是 视频名称_图片帧.xml :(
         if video_id == 'frame':
             video_id=os.path.basename(os.path.dirname(xml_path))
+            if video_id =="default":
+                video_id = os.path.basename(os.path.dirname(os.path.dirname(xml_path)))
         if video_id not in total_ann:
             total_ann[video_id]={}
             if save_image:
@@ -94,7 +107,7 @@ if __name__ == '__main__':
         person_id=0
         for obj in root.findall('object'):
             name = obj.find('name').text
-            if name != '异常行为人':
+            if name != '异常行为人' and name != '正常行为人':
                 continue
             person_id+=1
             total_ann[video_id][timestamp][person_id] = {}
@@ -103,15 +116,25 @@ if __name__ == '__main__':
             # m = re.search(pattern, labels)
 
             #异常处理：用视频标注的内容，里面属性不一致
-            if len(labels.split(',')) ==4:
-                _,action_label,_, entity_id = labels.split(',')
-                if '人物ID' not in entity_id:
-                    entity_id,action_label,_, _ = labels.split(',')
-            else:
-                assert len(labels.split(',')) ==2
-                entity_id, action_label = labels.split(',')
-                if '异常行为' not in action_label:
-                    action_label, entity_id = labels.split(',')
+            # if len(labels.split(',')) ==4:
+            #     _,action_label,_, entity_id = labels.split(',')
+            #     if '人物ID' not in entity_id:
+            #         entity_id,action_label,_, _ = labels.split(',')
+            # else:
+            #     assert len(labels.split(',')) ==2
+            #     entity_id, action_label = labels.split(',')
+            #     if '异常行为' not in action_label:
+            #         action_label, entity_id = labels.split(',')
+            for label in labels.split(','):
+                if '人物ID' in label:
+                    entity_id = label
+                if '异常行为' in label:
+                    action_label = label
+            if name == "正常行为人":
+                action_label="异常行为=正常"
+                for label in labels.split(','):
+                    if 'track_id' in label:
+                        entity_id = video_id+'_'+label
 
             #验证集，历史遗留，先采样间隔25帧，后改为间隔10帧，历史遗留问题，先用图片标注，后用视频标注导致不同
             # 异常处理：标注文件问题，标注信息可能会左右对调
@@ -119,8 +142,8 @@ if __name__ == '__main__':
             # if '异常行为' not in action_label:
             #     action_label, entity_id = labels.split(',')
 
-            assert '异常行为' in action_label,f'xml_path={xml_path}'
-            assert '人物ID' in entity_id,f'xml_path={xml_path}'
+            # assert '异常行为' in action_label,f'xml_path={xml_path}'
+            # assert '人物ID' in entity_id,f'xml_path={xml_path}'
 
             polygon = obj.find('polygon')
             pts = polygon.findall('pt')
@@ -139,6 +162,10 @@ if __name__ == '__main__':
                 total_action_labels.append(action_label)
             if entity_id not in total_entity_id:
                 total_entity_id.append(entity_id)
+            if action_label not in total_action_labels_num:
+                total_action_labels_num[action_label]=1
+            else:
+                total_action_labels_num[action_label]+=1
 
 
     def custom_action_labels():
@@ -151,6 +178,7 @@ if __name__ == '__main__':
     label_ids = {name: i for i, name in enumerate(custom_action_labels())}
     file_data = ""
     print(total_action_labels)
+    print(total_action_labels_num)
     print(label_ids)
     proposals={}
     for video_name,total_frames in total_ann.items():
